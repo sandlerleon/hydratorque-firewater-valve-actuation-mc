@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software or the manuscript, please cite them as below."
+title: "HydraTorque: probabilistic design and safety-constrained optimization of a firewater-powered portable valve operator (HydraTorque_MC)"
+version: "2.0.0"
+date-released: "2026-11-04"
+license: MIT
+repository-code: "https://github.com/sandlerleon/hydratorque-firewater-valve-actuation-mc"
+doi: "10.5281/zenodo.23969346"
+authors:
+  - family-names: Sandler
+    given-names: Leon
+    orcid: "https://orcid.org/0009-0007-4584-808X"
+    affiliation: "Independent Researcher"
+preferred-citation:
+  type: article
+  title: "Probabilistic Design and Safety-Constrained Optimization of a Firewater-Powered Portable Valve Actuation System"
+  authors:
+    - family-names: Sandler
+      given-names: Leon
+  notes: "Manuscript prepared for the Journal of the Brazilian Society of Mechanical Sciences and Engineering; archived at 10.5281/zenodo.23969344"
