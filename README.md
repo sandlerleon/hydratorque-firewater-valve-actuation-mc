@@ -45,7 +45,7 @@ Draw-for-draw equivalence with the concept-stage model when the six added mechan
 | `results/results.json` | all results of the paper (seed 2026) |
 | `figures/` | figures 1–12 and S1–S2 |
 | `manuscript/` | manuscript, Supplementary Information, cover letter (docx + pdf), ChemRxiv copy, builders in `manuscript/src` |
-| `legacy_v1/` | the concept-stage script, its results and the Wazoku white paper v2.1 (unchanged) |
+| `legacy_v1/` | the concept-stage script and its results (unchanged) |
 
 ## Versions
 
