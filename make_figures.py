@@ -139,7 +139,7 @@ def fig_grid():
 def fig_pareto():
     O = R["optimization"]; fig, ax = plt.subplots(1, 2, figsize=(8.2, 3.5))
     cols = {"allowable|0": BL, "median|0": GY, "allowable|0.75": GR, "median|0.75": OR}
-    labs = {"allowable|0": "allowable basis, no accumulator", "median|0": "median basis, no accumulator", "allowable|0.75": "allowable basis, accumulator 0.75", "median|0.75": "median basis, accumulator 0.75"}
+    labs = {"allowable|0": "allowable, no acc.", "median|0": "median, no acc.", "allowable|0.75": "allowable, acc. 0.75", "median|0.75": "median, acc. 0.75"}
     for k, v in O.items():
         if k.endswith("creep"):
             continue
@@ -156,7 +156,7 @@ def fig_pareto():
         ax[0].step(xs[o], np.maximum.accumulate(ys[o]), where="post", color=c, lw=1.6, ls="--", label=labs[k[:-6]] + ", creep")
     bl = R["baseline"]; ax[0].plot(100 * bl["overtorque"]["p"], 100 * bl["success_safe"]["p"], "k*", ms=11, label="baseline tool")
     ax[0].axvline(1, color="k", ls=":"); ax[0].set_xlim(0, 25); ax[0].set_ylim(30, 75)
-    ax[0].set_xlabel("over-torque probability (%)"); ax[0].set_ylabel("success without over-torque (%)"); ax[0].set_title("(a) designs and best safe-stroke probability reached", fontsize=9); ax[0].legend(frameon=False, fontsize=5.6, loc="lower right", ncol=1)
+    ax[0].set_xlabel("over-torque probability (%)"); ax[0].set_ylabel("success without over-torque (%)"); ax[0].set_title("(a) designs and best safe-stroke probability reached", fontsize=9); ax[0].legend(frameon=False, fontsize=6.6, loc="lower right", ncol=2)
     # (b) water per stroke along the frontier of the allowable/0.75 family
     v = O["allowable|0.75"]; d = v["designs"]
     sc = ax[1].scatter([100 * x["overtorque"] for x in d], [x["volume"] for x in d], c=[100 * x["safe"] for x in d], s=6, cmap="viridis")
