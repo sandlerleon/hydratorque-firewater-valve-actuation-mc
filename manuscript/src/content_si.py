@@ -66,6 +66,14 @@ for k, v in R["robust_select"].items():
         rows.append([k, "%g%%" % (100 * float(lim)), n(pk["D"]), n(pk["R"]), n(pk["mult"], 2), n(pk["q"]), pc(pk["wc_safe"], 1), pc(pk["wc_ot"], 1)] if pk else [k, "%g%%" % (100 * float(lim)), "none", "", "", "", "", ""])
 adds(("table", "Table S8. Robust selection: for each limit on the worst-case over-torque probability over the assumption shifts, the candidate with the largest worst-case safe-stroke probability.",
       ["Family", "Worst-case limit", "D", "R", "Relief", "Q limit", "Worst-case safe", "Worst-case over-torque"], rows, [1.2, 1.0, 0.6, 0.6, 0.7, 0.7, 1.0, 1.2], 15))
+spd_ = lambda r: r["q"] * 3785.41 / r["D"]
+rows = []
+for k, v in OPT.items():
+    ba = v.get("best_any"); bf = v["best_feasible"]
+    c15 = max([r for r in v["designs"] if r["overtorque"] <= 0.01 and spd_(r) <= 1500], key=lambda r: r["safe"], default=None)
+    rows.append([k, n(spd_(ba)) if ba else "", pc(ba["safe"], 1) if ba else "", n(spd_(bf)) if bf else "", pc(bf["safe"], 1) if bf else "none", n(spd_(c15)) if c15 else "", pc(c15["safe"], 1) if c15 else "none"])
+adds(("table", "Table S6b. Effect of the motor-speed limit on the best design of each family (in-sample, P(over-torque) <= 1%): motor speed at the flow limit (rpm) and probability of a safe stroke without a speed limit, with the limit of 3,000 rpm used in the paper, and with a limit of 1,500 rpm.",
+      ["Family", "No limit: rpm", "Safe", "3,000 rpm: rpm", "Safe", "1,500 rpm: rpm", "Safe"], rows, [1.5, 0.9, 0.7, 1.0, 0.7, 1.0, 0.7], 14))
 adds(("h1", "S6. Valve classes with unequal stem strength"))
 rows = []
 for k, v in R["hetero"].items():

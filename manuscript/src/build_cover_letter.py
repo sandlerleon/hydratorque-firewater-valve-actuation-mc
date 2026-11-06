@@ -51,7 +51,7 @@ para("The manuscript makes four contributions. (i) A probabilistic model with an
 para("The study is explicit about what it is. Every input distribution is an assumed prior, because no published distribution of breakaway torques, surge parameters or spare firewater flows was found; "
      "the model is verified numerically (draw-for-draw equivalence with the earlier model, closed-form checks, energy balance, %s automated tests) but not validated physically; and the results are "
      "simulation outputs under those assumptions, not measurements. The surge relations are checked against classical water-hammer results and a method-of-characteristics simulation (conservative in 97%% of random cases, provided the relief valve responds within about 0.1 s), the over-torque probabilities of the chosen designs are given with confidence limits and a strict compliance rule, and preliminary mechanical loads (gearbox rating, reaction arm, accumulator size) are estimated. The manuscript lists the measurements that would replace the assumptions, and it makes no claim of superiority over conventional operators."
-     % "30")
+     % "31")
 para("The code and results are openly available at %s and archived at https://doi.org/%s (code, all versions); the manuscript and its Supplementary Information are archived at https://doi.org/%s "
      "(all versions). One command regenerates every number and figure." % (GITHUB, DOIS["code_concept"], DOIS["paper_concept"]))
 para("Disclosure. The concept originated as a white paper that I prepared for an industrial scouting challenge; I have filed no patent, and no contract or payment has resulted. "

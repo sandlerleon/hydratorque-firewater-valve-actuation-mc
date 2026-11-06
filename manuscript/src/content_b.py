@@ -38,7 +38,7 @@ add(("p", "The model is verified in five ways, none of which validates its physi
           "the simulated breakaway probability agrees with the closed form for a mixture of lognormal valve classes to within %s over supply pressures of 40 to 200 psi (Fig. @F:verify@a), and the over-torque probability of a relief-limited tool agrees with its closed form to within 0.004. "
           "Third, the mechanical output power never exceeds the hydraulic power at the motor (maximum ratio %s). Fourth, %s automated tests check unit conversions, the hose-friction form, the Joukowsky value, monotonic behavior in the supply pressure, the accumulator and the relief setting, "
           "and the creep logic. Fifth, convergence is checked by batch means: the standard error of the baseline probability of a safe stroke over ten blocks is %s percentage points (Supplementary Fig. S1)."
-          % (n(ST["closed_form_max_dev"], 4), n(ST["energy_ratio_max"], 3), "30", n(100 * R["baseline_se"]["success_safe"], 2))))
+          % (n(ST["closed_form_max_dev"], 4), n(ST["energy_ratio_max"], 3), "31", n(100 * R["baseline_se"]["success_safe"], 2))))
 add(("p", "Numerical verification is distinguished from physical validation. The simulation is consistent with its own assumptions; whether those assumptions describe real valves, hoses, motors "
           "and relief valves can only be decided by measurement [@Oberkampf2002]. The input distributions in particular are not calibrated. For that reason the conclusions are tested against "
           "deliberately wrong distributions (Section @S:shifts@)."))
@@ -65,7 +65,7 @@ add(("p", "Eight shifts are applied to the draws, one at a time, and then a comb
 
 add(("h1", "5. Multi-objective optimization"))
 add(("p", "The design problem has four variables: the displacement $D$ (60 to 500 cc), the ratio $R$ (60 to 600), the relief multiple $\\mu$ (0.2 to 1.0 of the nominal allowable stem torque, or 0.6 to 4 times the class median breakaway torque) and the flow limit "
-          "$Q_{\\rm lim}$ (15 to 100 gpm), plus, when creep is allowed, the creep flows at the start and end of travel (5 to 60 gpm, held for one and two turns). The adaptive reserve rule is applied. Eight families are searched: two relief bases, each without and with an accumulator that "
+          "$Q_{\\rm lim}$ (15 to 100 gpm), plus, when creep is allowed, the creep flows at the start and end of travel (5 to 60 gpm, held for one and two turns). The adaptive reserve rule is applied, and a design is admitted only if the motor speed at its flow limit is at most 3,000 rpm, an assumed requirement (no published speed limit of water-hydraulic motors of this class was found); the best designs without that limit, and with a limit of 1,500 rpm, are reported for comparison. Eight families are searched: two relief bases, each without and with an accumulator that "
           "absorbs 75% of the surge, each without and with creep. The objectives are to maximize the probability of a safe stroke and to minimize the probability of exceedance and the median water used in a stroke, under the decision constraint"))
 add(("eq", r"P\left(T_{\rm peak}>T_{\rm allow}\right)\le 0.01", 8))
 add(("p", "The limit of 1%% is an illustrative research constraint, not an established acceptable industrial safety limit; Section @S:opt@ shows how the result moves with it. Each family is searched with %s Latin-hypercube designs on %s common draws; the non-dominated set is found by "

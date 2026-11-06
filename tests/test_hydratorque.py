@@ -208,3 +208,13 @@ def test_moc_relief_valve_lowers_the_peak():
 def test_wilson_interval_contains_the_estimate_and_narrows_with_n():
     lo1, hi1 = H.wilson(10, 1000); lo2, hi2 = H.wilson(100, 10000)
     assert lo1 < 0.01 < hi1 and lo2 < 0.01 < hi2 and (hi2 - lo2) < (hi1 - lo1)
+
+
+def test_speed_cap_is_part_of_the_selection():
+    S = H.sample_inputs("mix", 3_000, 5)
+    out = H.study_optimize(S, 60, seed=5, ot_limit=0.05, families=(("allowable", 0.75, True),), rpm_cap=1500.0)
+    v = out["allowable|0.75|creep"]
+    assert v["rpm_cap"] == 1500.0 and v["n_feasible_speed"] <= v["n_feasible"]
+    if v["best_feasible"]:
+        assert H.motor_rpm(v["best_feasible"]) <= 1500.0
+        assert v["best_any"]["safe"] >= v["best_feasible"]["safe"] - 1e-12

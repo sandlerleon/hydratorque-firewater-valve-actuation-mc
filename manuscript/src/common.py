@@ -11,7 +11,7 @@ OUT = os.path.join(ROOT, "manuscript")
 R = json.load(open(os.path.join(ROOT, "results", "results.json"), encoding="utf-8"))
 DOIS = json.load(open(os.path.join(HERE, "dois.json"), encoding="utf-8"))
 GITHUB = "https://github.com/sandlerleon/hydratorque-firewater-valve-actuation-mc"
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 TITLE = "Probabilistic Design and Safety-Constrained Optimization of a Firewater-Powered Portable Valve Actuation System"
 
 

@@ -16,6 +16,13 @@ add(("p", "Three results are specific enough to guide a bench programme, each co
           "that the tool then cannot break free, which need a higher-pressure source or another tool. Third, the water budget is a design variable: a stroke uses of the order of a thousand litres, and whether that is acceptable depends on a spare flow that the operator has to know."
           % (n(100 * (BASE["success_safe"]["p"] - o75["safe"]), 0), n(100 * (BASE["success_safe"]["p"] - o0["safe"]), 0), n(100 * (OOS["optimized allowable|0.75|creep"]["out_of_sample"]["safe"] - o75["safe"]), 0),
              n(100 * (OOS["optimized allowable|0|creep"]["out_of_sample"]["safe"] - o0["safe"]), 0))))
+RC = BEST["allowable|0.75|creep"]; RCo = OOS["optimized allowable|0.75|creep"]["out_of_sample"]; RCci = R["ci"]["designs"]["optimized allowable|0.75|creep"]
+RCst = R["ci"]["strict"]["allowable|0.75|creep"]
+add(("p", "The recommended starting configuration for the bench programme is the speed-constrained design with an accumulator and creep: a %s cc motor with a %s:1 reduction (motor speed %s rpm at the flow limit), a flow limit of %s gpm with creep flows of %s gpm at the start and %s gpm at the end of travel, "
+          "and a relief chart at %s of the allowable stem torque. On independent draws it gives a safe stroke in %s of the draws with an over-torque probability of %s (upper 95%% limit %s); under the strict compliance rule the best speed-constrained design gives %s with an upper limit of %s. "
+          "These figures hold for verified stem strengths and a relief valve that responds within about 0.1 s (Sections @S:moc@ and @S:robust@)."
+          % (n(RC["D"]), n(RC["R"]), n(RC["q"] * 3785.41 / RC["D"]), n(RC["q"]), n(RC["cs"]) if RC["cs"] < RC["q"] else "no creep", n(RC["ce"]) if RC["ce"] < RC["q"] else "no creep", n(RC["mult"], 2),
+             pc(RCo["safe"], 1), pc(RCo["overtorque"], 2), pc(RCci["hi"], 2), pc(RCst["safe"], 1) if RCst else "n/a", pc(RCst["hi"], 2) if RCst else "n/a")))
 add(("p", "The results suggest the following design hypotheses, to be tested on the bench before they are rules: a relief chart set at about half of the nominal allowable stem torque of the valve; a "
           "hose-side accumulator or an equivalent surge absorber; a variable flow limiter that creeps for the first turn and the last two turns of the stroke; a flow limit between %s and %s gpm for strokes of 30 to 70 turns, with the adaptive reduction on shared sources; a product of displacement "
           "and gear ratio of about %s to %s; and a dedicated source for the large valves and for any site that has not measured its spare firewater flow. The numbers will move with the priors, and "
@@ -34,41 +41,51 @@ add(("p", "Four constraints follow from the setting and are not captured by the 
           "which this concept does not meet."))
 
 add(("h2", "@S:mech@ Preliminary mechanical feasibility"))
-MECH = R["mech"]; mb = MECH["baseline"]; m0 = MECH["optimized allowable|0"]; m75 = MECH["optimized allowable|0.75|creep"]
-add(("p", "The operating envelope of Section @S:opt@ is only useful if the loads it implies are mechanically attainable in a portable tool. Table @T:mech@ gives screening estimates for the draws of the model: the stall torque that the tool delivers, the output "
-          "torque rating that a planetary gearbox would need (1.5 times the 99.9th percentile of the peak stall torque), the reaction force and the section modulus of a steel reaction arm (yield %s MPa, safety factor %s, arm length %s m), the motor speed and hydraulic power, "
-          "the velocity in the hose and the gas volume of an isothermal accumulator that would absorb %s of the kinetic energy of the water column. They are not a design: the arm is a cantilever of one load case, the gearbox rating ignores shock loads and duty, the "
-          "accumulator volume ignores the compliance of the hose and the precharge of a real unit, and the dimensions and mass of the assembly cannot be estimated without component data. They define the data to ask of the manufacturers."
+MECH = R["mech"]; mb = MECH["baseline"]; m0 = MECH["optimized allowable|0"]; m75 = MECH["optimized allowable|0.75|creep"]; mu = MECH.get("unrestricted allowable|0.75|creep")
+add(("p", "The operating envelope of Section @S:opt@ is only useful if the loads it implies are mechanically attainable in a portable tool. Table @T:mech@ gives screening estimates for the draws of the model: the stall "
+          "torque that the tool delivers, the output torque rating that a planetary gearbox would need (1.5 times the 99.9th percentile of the peak stall torque), the reaction force and the section modulus of a steel reaction arm (yield %s MPa, safety factor %s, arm length %s m), "
+          "the motor speed and hydraulic power, the velocity in the hose and the gas volume that an isothermal accumulator would need to absorb %s of the kinetic energy of the water column. These are screening estimates of required quantities, not selected components: "
+          "the arm is a cantilever of one load case, the gearbox rating ignores shock loads and duty, and the accumulator volume is a required gas volume that ignores the compliance of the hose and the precharge of a real unit; it is not a commercial size. "
+          "The dimensions and mass of the assembly cannot be estimated without component data; the loads define the data to ask of the manufacturers."
           % (n(mb["sigma_y_mpa"]), n(mb["sf"], 1), n(mb["arm_m"], 1), "75%")))
+cols = [mb, m0, m75] + ([mu] if mu else [])
 rows = []
-for lab, key, fmt in (("Peak stall torque, median (N.m)", "T_peak_p50", 0), ("Peak stall torque, 99th percentile (N.m)", "T_peak_p99", 0), ("Gearbox output rating, 1.5 x 99.9th percentile (N.m)", "gearbox_rating_Nm", 0),
-                      ("Reaction force at the arm tip, 99th percentile (kN)", "reaction_kN_p99", 1), ("Arm section modulus, 99th percentile (cm3)", "arm_Z_cm3_p99", 0),
-                      ("Motor speed at the flow limit (rpm)", "motor_rpm_p50", 0), ("Hydraulic power at the motor, 95th percentile (kW)", "motor_kW_p95", 1),
-                      ("Velocity in the hose, 95th percentile (m/s)", "hose_v_p95", 1), ("Accumulator gas volume, median (L)", "accumulator_gas_L_p50", 1), ("Accumulator gas volume, 95th percentile (L)", "accumulator_gas_L_p95", 1),
-                      ("Accumulator gas volume, 99th percentile (L)", "accumulator_gas_L_p99", 1)):
-    rows.append([lab] + [n(m[key], fmt) for m in (mb, m0, m75)])
-add(("table", "Table @T:mech@. Preliminary mechanical loads for the baseline tool (D = %s cc, R = %s), the best design without an accumulator or creep (D = %s cc, R = %s) and the best design with an accumulator and creep (D = %s cc, R = %s); "
-              "%s draws, valve-class mix." % (n(mb["tool"]["D"]), n(mb["tool"]["R"]), n(m0["tool"]["D"]), n(m0["tool"]["R"]), n(m75["tool"]["D"]), n(m75["tool"]["R"]), n(100000)),
-     ["Quantity", "Baseline", "Best, no accumulator", "Best, accumulator and creep"], rows, [3.3, 0.9, 1.3, 1.5], 15))
+for lab, key, fmt, accrow in (("Peak stall torque, median (N.m)", "T_peak_p50", 0, False), ("Peak stall torque, 99th percentile (N.m)", "T_peak_p99", 0, False),
+                              ("Gearbox output rating, 1.5 x 99.9th percentile (N.m)", "gearbox_rating_Nm", 0, False), ("Reaction force at the arm tip, 99th percentile (kN)", "reaction_kN_p99", 1, False),
+                              ("Arm section modulus, 99th percentile (cm3)", "arm_Z_cm3_p99", 0, False), ("Motor speed at the flow limit (rpm)", "motor_rpm_p50", 0, False),
+                              ("Hydraulic power at the motor, 95th percentile (kW)", "motor_kW_p95", 1, False), ("Velocity in the hose, 95th percentile (m/s)", "hose_v_p95", 1, False),
+                              ("Required accumulator gas volume, median (L)", "accumulator_gas_L_p50", 1, True), ("Required accumulator gas volume, 95th percentile (L)", "accumulator_gas_L_p95", 1, True),
+                              ("Required accumulator gas volume, 99th percentile (L)", "accumulator_gas_L_p99", 1, True)):
+    row = [lab]
+    for m in cols:
+        v = n(m[key], fmt)
+        row.append("(%s)" % v if accrow and not m["has_accumulator"] else v)
+    rows.append(row)
+add(("table", "Table @T:mech@. Preliminary mechanical loads for the baseline tool (D = %s cc, R = %s), the best speed-constrained design without an accumulator or creep (D = %s cc, R = %s) and the best speed-constrained design with an accumulator and creep (D = %s cc, R = %s)%s; "
+              "%s draws, valve-class mix. Accumulator volumes are screening estimates of the gas volume required to absorb 75%% of the surge energy, not selected commercial sizes; values in parentheses are hypothetical, for designs that have no accumulator."
+              % (n(mb["tool"]["D"]), n(mb["tool"]["R"]), n(m0["tool"]["D"]), n(m0["tool"]["R"]), n(m75["tool"]["D"]), n(m75["tool"]["R"]),
+                 (" and, for comparison, the best design without the speed limit (D = %s cc, R = %s)" % (n(mu["tool"]["D"]), n(mu["tool"]["R"]))) if mu else "", n(100000)),
+     ["Quantity", "Baseline", "Best, no accumulator", "Best, accumulator and creep"] + (["No speed limit"] if mu else []), rows, [3.0, 0.8, 1.1, 1.3] + ([0.9] if mu else []), 14))
 spd = lambda row: row["q"] * 3785.41 / row["D"]
-capped = {}
-for cap in (1500, 3000):
-    capped[cap] = {k: max([r for r in OPT[k]["designs"] if r["overtorque"] <= 0.01 and spd(r) <= cap], key=lambda r: r["safe"], default=None) for k in ("allowable|0.75", "allowable|0.75|creep")}
-add(("p", "Four observations follow. The stall torque is of the order of 1.5 to 5 kN.m, so the gearbox must be rated for %s to %s N.m at the output and the reaction arm must carry %s to %s kN at %s m, which is a modest steel section (a section modulus of %s to %s cm3 at the 99th percentile); "
-          "the optimized designs lower these loads by %s to %s because their relief setting is lower. The accumulator is of moderate size: a gas volume of %s L at the median and %s L at the 95th percentile for the best design with creep, and %s L for the baseline, "
-          "volumes that a portable assembly can plausibly carry, to be confirmed with manufacturers. The search placed no limit on the motor speed, and the best designs with creep drive a %s cc motor at about %s rpm at the flow limit, which may exceed what a water-hydraulic motor can sustain; "
-          "restricting the motor speed at the flow limit to 3,000 rpm lowers the best probability of a safe stroke found in the search (in-sample) from %s to %s for the family with an accumulator and creep, and restricting it to 1,500 rpm to %s. "
-          "Finally, the velocity of the water in the hose reaches %s m/s at the 95th percentile at the largest flow limits, which would favor the larger hose sizes."
-          % (n(min(m["gearbox_rating_Nm"] for m in (m0, m75))), n(mb["gearbox_rating_Nm"]), n(min(m["reaction_kN_p99"] for m in (m0, m75)), 1), n(mb["reaction_kN_p99"], 1), n(mb["arm_m"], 1),
-             n(min(m["arm_Z_cm3_p99"] for m in (m0, m75))), n(mb["arm_Z_cm3_p99"]), pc(1 - m75["T_peak_p99"] / mb["T_peak_p99"], 0), pc(1 - m0["T_peak_p99"] / mb["T_peak_p99"], 0),
-             n(m75["accumulator_gas_L_p50"], 1), n(m75["accumulator_gas_L_p95"], 1), n(mb["accumulator_gas_L_p95"], 1), n(m75["tool"]["D"]), n(m75["motor_rpm_p50"], -2 if False else 0),
-             pc(BEST["allowable|0.75|creep"]["safe"], 1), pc(capped[3000]["allowable|0.75|creep"]["safe"], 1) if capped[3000]["allowable|0.75|creep"] else "none",
-             pc(capped[1500]["allowable|0.75|creep"]["safe"], 1) if capped[1500]["allowable|0.75|creep"] else "none", n(m75["hose_v_p95"], 1))))
+fk = "allowable|0.75|creep"
+c15 = max([r for r in OPT[fk]["designs"] if r["overtorque"] <= 0.01 and spd(r) <= 1500], key=lambda r: r["safe"], default=None)
+ua = OPT[fk].get("best_any"); uo = OOS.get("unrestricted " + fk, {}).get("out_of_sample")
+rcb = BEST[fk]
+add(("p", "Four observations follow. The stall torque is of the order of %s to %s kN.m at the 99th percentile, so the gearbox must be rated for %s to %s N.m at the output and the reaction arm must carry %s to %s kN at %s m, a modest steel section (a section modulus of %s to %s cm3); "
+          "the optimized designs lower these loads by %s to %s because their relief setting is lower. The required accumulator gas volume of the recommended design is %s L at the median and %s L at the 95th percentile (hypothetically %s L at the 95th percentile for the baseline). "
+          "The motor speed is part of the search: the recommended design runs a %s cc motor at %s rpm at the flow limit%s. A limit of 1,500 rpm lowers the best in-sample probability of a safe stroke of this family to %s. "
+          "Finally, the velocity of the water in the hose reaches %s m/s at the 95th percentile for the recommended design, which would favor the larger hose sizes."
+          % (n(m0["T_peak_p99"] / 1000, 1), n(mb["T_peak_p99"] / 1000, 1), n(min(m["gearbox_rating_Nm"] for m in (m0, m75))), n(mb["gearbox_rating_Nm"]), n(min(m["reaction_kN_p99"] for m in (m0, m75)), 1), n(mb["reaction_kN_p99"], 1),
+             n(mb["arm_m"], 1), n(min(m["arm_Z_cm3_p99"] for m in (m0, m75))), n(mb["arm_Z_cm3_p99"]), pc(1 - m75["T_peak_p99"] / mb["T_peak_p99"], 0), pc(1 - m0["T_peak_p99"] / mb["T_peak_p99"], 0),
+             n(m75["accumulator_gas_L_p50"], 1), n(m75["accumulator_gas_L_p95"], 1), n(mb["accumulator_gas_L_p95"], 1), n(rcb["D"]), n(spd(rcb)),
+             ("; without the 3,000 rpm limit the best design would run a %s cc motor at %s rpm and reach a safe-stroke probability of %s out of sample, against %s for the speed-constrained design, so the limit costs %s percentage points"
+              % (n(ua["D"]), n(spd(ua)), pc(uo["safe"], 1), pc(OOS["optimized " + fk]["out_of_sample"]["safe"], 1), n(100 * (uo["safe"] - OOS["optimized " + fk]["out_of_sample"]["safe"]), 1))) if (ua and uo and spd(ua) > 3000) else "; the limit of 3,000 rpm is not binding for this family",
+             pc(c15["safe"], 1) if c15 else "none", n(m75["hose_v_p95"], 1))))
 add(("h1", "8. Limitations and future validation"))
 add(("p", "The principal limitation is that every input distribution is an assumed prior: no published distribution of breakaway torques of the valves of interest was found, and the surge parameters, the efficiency at stall and the spare flows of firewater sources are assumptions. A larger number "
           "of simulations does not compensate for uncertain priors; Sections @S:shifts@ and @S:robust@ are the only protection. The model is lumped: the relief valve acts as an override with sampled overshoot, the hose compliance is a sampled wave speed, and the stem is a single strength with a sampled yield "
           "margin. The inputs are independent although valve size, age, stem strength and breakaway torque are correlated. The surge model is a screening approximation, checked against classical results and a transient simulation of its own assumptions (Section @S:moc@) but not against a measured stall "
-          "transient; the mechanical loads of Section @S:mech@ are screening estimates, and the search placed no limit on motor speed. The model is verified numerically, not validated physically [@Oberkampf2002]; its numbers should not be quoted as field reliability."))
+          "transient; the mechanical loads of Section @S:mech@ are screening estimates, and the 3,000 rpm limit on motor speed is an assumed requirement. The model is verified numerically, not validated physically [@Oberkampf2002]; its numbers should not be quoted as field reliability."))
 add(("p", "A validation programme that would replace the assumed priors has six steps. (i) A survey of breakaway, running and allowable stem torques of the valves to be served (2 to 16 inches) calibrates the valve classes and the stem strengths. (ii) A bench rig with a torque transducer measures "
           "motor torque and leakage against pressure drop and speed, including the loss at start-up. (iii) An instrumented stall test with fast pressure transducers measures the surge, the wave speed and the response of the relief valve, with and without an accumulator and creep. "
           "(iv) Hydrant and firewater flow tests [@NFPA291] give the spare flows of shared sources. (v) A field pilot with a hazard identification tests the operating procedure. (vi) A hazardous-area assessment closes the certification path."))
@@ -107,7 +124,7 @@ add(("p0", "Competing interests. The author has no financial or non-financial in
 add(("p0", "Availability of data and material. All results are generated by the code archived at https://doi.org/%s (all versions) and available at %s; the manuscript and its Supplementary "
            "Information are archived at https://doi.org/%s (all versions). No measured data were used." % (DOIS["code_concept"].replace("10.5281/", "10.5281/"), GITHUB, DOIS["paper_concept"])))
 add(("p0", "Code availability. The simulation (HydraTorque_MC.py, version %s, numpy and matplotlib only), its automated tests and the figure and manuscript builders are in the repository; "
-           "python HydraTorque_MC.py --reproduce regenerates every number and figure (seed %s)." % (VERSION, R["meta"]["seed"])))
+           "python HydraTorque_MC.py --reproduce regenerates every number and figure (seed %s); a fresh clone of the repository reproduced every number and figure of the paper identically (same machine, Python 3.11, numpy 2.4.6)." % (VERSION, R["meta"]["seed"])))
 add(("p0", "Author contributions. The author is the sole contributor."))
 add(("p0", "Use of generative AI. During the preparation of this work the author used a generative AI tool (Claude, Anthropic) for code development (the extended hydraulic model, the optimization "
            "and the automated tests), for the analysis scripts and for drafting and editing the text. After using the tool, the author reviewed and edited the content and takes full responsibility "

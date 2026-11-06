@@ -159,21 +159,22 @@ fnames = {"allowable|0|creep": "Chart from allowable torque, creep, no accumulat
           "median|0.75": "Chart from median breakaway, accumulator 0.75"}
 rows = []
 oos = R["robust"]
-rows.append(["Baseline tool", "200", "250", "2.0 x median", "60", "none", pc(B0["success_safe"]["p"], 1), pc(B0["overtorque"]["p"], 1), pc(B0["damage"]["p"], 2), n(B0["volume_median_L"])])
+rpm = lambda d: d["q"] * 3.78541 * 1000.0 / d["D"]
+rows.append(["Baseline tool", "200", "250", "2.0 M", "60", n(60 * 3785.41 / 200.0), "none", pc(B0["success_safe"]["p"], 1), pc(B0["overtorque"]["p"], 1), pc(B0["damage"]["p"], 2), n(B0["volume_median_L"])])
 for k in ("allowable|0", "median|0", "allowable|0.75", "median|0.75"):
     d = BEST[k]; o = oos["optimized %s" % k]["out_of_sample"]
-    rows.append([fnames[k], n(d["D"]), n(d["R"]), ("%s x allowable" % n(d["mult"], 2)) if k.startswith("allowable") else ("%s x median" % n(d["mult"], 2)), n(d["q"]), "none",
+    rows.append([fnames[k], n(d["D"]), n(d["R"]), ("%s A" % n(d["mult"], 2)) if k.startswith("allowable") else ("%s M" % n(d["mult"], 2)), n(d["q"]), n(rpm(d)), "none",
                  pc(o["safe"], 1), pc(o["overtorque"], 1), pc(o["damage"], 2), n(o["volume"])])
 for k in ("allowable|0|creep", "median|0|creep", "allowable|0.75|creep", "median|0.75|creep"):
     d = BEST[k]; o = oos["optimized %s" % k]["out_of_sample"]
     crs = "%s / %s" % (n(d["cs"]) if d["cs"] < d["q"] else "-", n(d["ce"]) if d["ce"] < d["q"] else "-")
-    rows.append([fnames[k], n(d["D"]), n(d["R"]), ("%s x allowable" % n(d["mult"], 2)) if k.startswith("allowable") else ("%s x median" % n(d["mult"], 2)), n(d["q"]), crs,
+    rows.append([fnames[k], n(d["D"]), n(d["R"]), ("%s A" % n(d["mult"], 2)) if k.startswith("allowable") else ("%s M" % n(d["mult"], 2)), n(d["q"]), n(rpm(d)), crs,
                  pc(o["safe"], 1), pc(o["overtorque"], 1), pc(o["damage"], 2), n(o["volume"])])
 ast(all(oos["optimized %s" % k]["out_of_sample"]["overtorque"] < 0.012 for k in CRP), "the constraint holds out of sample in the creep families")
 ast(all(oos["optimized %s" % k]["out_of_sample"]["overtorque"] < 0.012 for k in fam), "the constraint holds out of sample in every family")
-add(("table", "Table @T:designs@. Best design of each family under P(over-torque) <= 1%%, found on %s draws and re-evaluated on %s independent draws (shown). Relief multiple of the allowable stem torque or of the "
-              "median breakaway torque; D in cc, flow limit and creep flows (start / end) in gpm; water is the median per successful stroke (L)." % (n(M["n_opt"]), n(M["n"])),
-     ["Design", "D", "R", "Relief", "Q", "Creep", "Safe", "Over-torque", "Damage", "Water (L)"], rows, [2.3, 0.45, 0.45, 1.1, 0.45, 0.8, 0.6, 0.8, 0.7, 0.7], 14))
+add(("table", "Table @T:designs@. Best design of each family under P(over-torque) <= 1%%, found on %s draws and re-evaluated on %s independent draws (shown). Relief: multiple of the allowable stem torque (A) or of the "
+              "median breakaway torque (M); D in cc, flow limit and creep flows (start / end) in gpm, rpm the motor speed at the flow limit (limited to 3,000); water is the median per successful stroke (L)." % (n(M["n_opt"]), n(M["n"])),
+     ["Design", "D", "R", "Relief", "Q", "rpm", "Creep", "Safe", "Over-torque", "Damage", "Water (L)"], rows, [2.3, 0.5, 0.5, 0.7, 0.5, 0.65, 0.8, 0.65, 0.85, 0.7, 0.7], 12))
 b0, b75 = BEST["allowable|0"], BEST["allowable|0.75"]
 o0, o75 = oos["optimized allowable|0"]["out_of_sample"], oos["optimized allowable|0.75"]["out_of_sample"]
 add(("p", "A design that satisfies the 1%% constraint exists in every family (%s to %s of the %s designs searched meet it), and the constraint is respected out of sample (Table @T:designs@): the "
@@ -195,11 +196,11 @@ cr0, cr75 = BEST["allowable|0|creep"], BEST["allowable|0.75|creep"]
 oc0, oc75 = oos["optimized allowable|0|creep"]["out_of_sample"], oos["optimized allowable|0.75|creep"]["out_of_sample"]
 add(("p", "Allowing the creep flows at the start and at the end of travel to be chosen raises the best probability of a safe stroke under the same constraint (Table @T:designs@, out of sample) from %s to %s without an "
           "accumulator and from %s to %s with one. The gain comes from the end of travel: the chosen designs run at %s and %s gpm for the last two turns, which is %s and %s of their flow limit, so the flow that the stall has to stop, and with it the surge, "
-          "is a small fraction of the running flow, and the flow limit and the relief chart can be set higher for the same over-torque probability (relief at %s and %s of the allowable stem torque, flow limits of %s and %s gpm). "
-          "Without an accumulator the optimizer chooses a very slow approach (about 5 gpm) and pays for it in time (median %s minutes against %s without creep); with an accumulator a moderate one. The start creep chosen, %s and %s gpm, should not be read as an optimum: "
+          "is reduced, and the flow limit and the relief chart can be set higher for the same over-torque probability (relief at %s and %s of the allowable stem torque, flow limits of %s and %s gpm). "
+          "Without an accumulator the end creep is %s gpm and costs time (median %s minutes against %s without creep); with an accumulator it is %s gpm. The start creep chosen, %s and %s gpm, should not be read as an optimum: "
           "in this model it acts only on valves that do not break free, so the objective is nearly flat in it."
           % (pc(o0["safe"], 1), pc(oc0["safe"], 1), pc(o75["safe"], 1), pc(oc75["safe"], 1), n(cr0["ce"]), n(cr75["ce"]), pc(cr0["ce"] / cr0["q"], 0), pc(cr75["ce"] / cr75["q"], 0), n(cr0["mult"], 2), n(cr75["mult"], 2),
-             n(cr0["q"]), n(cr75["q"]), n(oc0["t_med"], 1), n(o0["t_med"], 1), n(cr0["cs"]), n(cr75["cs"]))))
+             n(cr0["q"]), n(cr75["q"]), n(cr0["ce"]), n(oc0["t_med"], 1), n(o0["t_med"], 1), n(cr75["ce"]), n(cr0["cs"]), n(cr75["cs"]))))
 # sensitivity of the optimum to the constraint
 lims = [0.005, 0.01, 0.02, 0.05]
 rowsl = []

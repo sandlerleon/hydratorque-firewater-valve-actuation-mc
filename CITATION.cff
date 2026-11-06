@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software or the manuscript, please cite them as below."
 title: "HydraTorque: probabilistic design and safety-constrained optimization of a firewater-powered portable valve operator (HydraTorque_MC)"
-version: "2.2.0"
+version: "2.3.0"
 date-released: "2026-11-05"
 license: MIT
 repository-code: "https://github.com/sandlerleon/hydratorque-firewater-valve-actuation-mc"

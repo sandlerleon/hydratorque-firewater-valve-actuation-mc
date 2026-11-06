@@ -37,7 +37,7 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 PSI = 6894.757            # Pa per psi
 GPM_LPM = 3.78541         # L/min per gpm
 GPM_M3S = 6.30902e-5      # m3/s per gpm
@@ -50,6 +50,12 @@ P_RESID = 20.0            # residual pressure at the flow-test capacity, psi (co
 N_FLOW = 1.85             # flow-test exponent
 Q_FOUL_REF = 60.0         # gpm at which the strainer/fouling loss equals its sampled value
 Q_MAX = 1500.0            # upper bracket of the circuit solution, gpm
+RPM_CAP = 3000.0          # assumed limit on the motor speed at the flow limit, rpm (no published speed limit of water-hydraulic motors of this class was found; 1,500 rpm is also reported)
+
+
+def motor_rpm(d):
+    """motor speed at the flow limit of a design row (leakage neglected), rpm"""
+    return d["q"] * GPM_LPM * 1000.0 / d["D"]
 
 # ----------------------------------------------------------------------------- definitions
 @dataclass(frozen=True)
@@ -592,9 +598,10 @@ FAMILIES = (("allowable", 0.0, False), ("median", 0.0, False), ("allowable", 0.7
             ("allowable", 0.0, True), ("allowable", 0.75, True), ("median", 0.0, True), ("median", 0.75, True))
 
 
-def study_optimize(S_opt, n_designs=1500, seed=5, ot_limit=0.01, families=FAMILIES):
+def study_optimize(S_opt, n_designs=1500, seed=5, ot_limit=0.01, families=FAMILIES, rpm_cap=RPM_CAP):
     """Latin-hypercube search of (D, R, relief multiple, flow limit) for each family (relief basis, accumulator fraction); Pareto set in
-    (success without over-torque, over-torque probability, water per stroke); best design under P(over-torque) <= ot_limit."""
+    (success without over-torque, over-torque probability, water per stroke); best design under P(over-torque) <= ot_limit and a motor speed at the flow limit of at most rpm_cap
+    (best_feasible), and the best design without the speed limit (best_any)."""
     rng = np.random.default_rng(seed)
     out = {}
     for fam in families:
@@ -607,9 +614,12 @@ def study_optimize(S_opt, n_designs=1500, seed=5, ot_limit=0.01, families=FAMILI
             rows.append(dict(d, **objectives(evaluate(tool_from(d, basis, acc), S_opt))))
         F = np.array([[-r["safe"], r["overtorque"], r["volume"]] for r in rows])
         pm = pareto_mask(F)
-        feas = [r for r in rows if r["overtorque"] <= ot_limit]
+        feas_any = [r for r in rows if r["overtorque"] <= ot_limit]
+        feas = [r for r in feas_any if motor_rpm(r) <= rpm_cap]
         best = max(feas, key=lambda r: r["safe"]) if feas else None
-        out["%s|%g%s" % (basis, acc, "|creep" if creep else "")] = dict(basis=basis, acc=acc, creep=creep, designs=rows, pareto=[i for i in range(len(rows)) if pm[i]], best_feasible=best, n_feasible=len(feas))
+        best_any = max(feas_any, key=lambda r: r["safe"]) if feas_any else None
+        out["%s|%g%s" % (basis, acc, "|creep" if creep else "")] = dict(basis=basis, acc=acc, creep=creep, designs=rows, pareto=[i for i in range(len(rows)) if pm[i]], best_feasible=best,
+                                                                         best_any=best_any, n_feasible=len(feas_any), n_feasible_speed=len(feas), rpm_cap=rpm_cap)
     return out
 
 
@@ -623,7 +633,7 @@ def study_robust_select(family, n, seed, top=150, limits=(0.02, 0.03, 0.05, 0.10
     """Among the feasible designs of one family (nominal over-torque <= 2%), evaluate the worst case over the assumption shifts and, for each limit
     on the worst-case over-torque probability, choose the design that maximises the worst-case probability of a safe stroke."""
     basis, acc = family["basis"], family["acc"]
-    feas = [r for r in family["designs"] if r["overtorque"] <= 0.02]
+    feas = [r for r in family["designs"] if r["overtorque"] <= 0.02 and motor_rpm(r) <= RPM_CAP]
     feas = sorted(feas, key=lambda r: -r["safe"])
     cand = feas[:top // 2] + feas[top // 2:][::max(1, len(feas[top // 2:]) // (top // 2))][:top // 2]
     Ss = {k: sample_inputs("mix", n, seed, shift=sh) for k, sh in SHIFTS.items()}
@@ -667,7 +677,7 @@ def study_class_specific(n, seed, designs=500, acc=0.75, ot_limit=0.01):
         for u in lhs(designs, 4, rng):
             d = design_from_unit(u, "allowable")
             rows.append(dict(d, **objectives(evaluate(tool_from(d, "allowable", acc), S))))
-        feas = [r for r in rows if r["overtorque"] <= ot_limit]
+        feas = [r for r in rows if r["overtorque"] <= ot_limit and motor_rpm(r) <= RPM_CAP]
         out[name] = max(feas, key=lambda r: r["safe"]) if feas else None
     return out
 
@@ -717,7 +727,7 @@ def reproduce_paper(outdir="results", n=200_000, n_sweep=60_000, n_opt=15_000, d
     import matplotlib.pyplot as plt
     os.makedirs(outdir, exist_ok=True)
     t0 = time.time()
-    res = dict(meta=dict(version=VERSION, n=n, n_sweep=n_sweep, n_opt=n_opt, designs=designs, seed=seed, tool=tool.__dict__, t_max_min=T_MAX_MIN))
+    res = dict(meta=dict(version=VERSION, rpm_cap=RPM_CAP, n=n, n_sweep=n_sweep, n_opt=n_opt, designs=designs, seed=seed, tool=tool.__dict__, t_max_min=T_MAX_MIN))
     res["selftest"] = selftest(tool)
     print("selftest ok", round(time.time() - t0))
     S = sample_inputs("mix", n, seed)
@@ -749,7 +759,8 @@ def reproduce_paper(outdir="results", n=200_000, n_sweep=60_000, n_opt=15_000, d
     # optimization
     So = sample_inputs("mix", n_opt, seed + 2)
     opt = study_optimize(So, designs, seed + 3)
-    res["optimization"] = {k: dict(basis=v["basis"], acc=v["acc"], creep=v["creep"], n_feasible=v["n_feasible"], pareto=v["pareto"], best_feasible=v["best_feasible"], designs=v["designs"])
+    res["optimization"] = {k: dict(basis=v["basis"], acc=v["acc"], creep=v["creep"], n_feasible=v["n_feasible"], n_feasible_speed=v["n_feasible_speed"], pareto=v["pareto"], best_feasible=v["best_feasible"],
+                                   best_any=v["best_any"], designs=v["designs"])
                            for k, v in opt.items()}
     print("optimization ok", round(time.time() - t0))
     res["class_specific"] = study_class_specific(n_opt, seed + 5)
@@ -779,6 +790,10 @@ def reproduce_paper(outdir="results", n=200_000, n_sweep=60_000, n_opt=15_000, d
             if pk and lim in ("0.03", "0.1"):
                 designs_eval["robust %s (worst-case limit %s)" % (k, lim)] = tool_from(pk, opt[k]["basis"], opt[k]["acc"])
     designs_eval["baseline + accumulator 0.75"] = replace(tool, accumulator=0.75)
+    for k, v in opt.items():
+        ba = v["best_any"]
+        if ba and v["best_feasible"] and ba is not v["best_feasible"] and motor_rpm(ba) > RPM_CAP:
+            designs_eval["unrestricted %s" % k] = tool_from(ba, v["basis"], v["acc"])
     robust = {}
     for dname, t in designs_eval.items():
         rr = {}
@@ -948,7 +963,7 @@ def study_ci(res, n_opt=None):
         p_ = v["out_of_sample"]["overtorque"]; k = int(round(p_ * n_oos)); lo, hi = wilson(k, n_oos)
         out["designs"][name] = dict(p=p_, lo=lo, hi=hi, n=n_oos)
     for fam, v in res["optimization"].items():
-        feas = [r for r in v["designs"] if wilson(int(round(r["overtorque"] * n_opt)), n_opt)[1] <= 0.01]
+        feas = [r for r in v["designs"] if wilson(int(round(r["overtorque"] * n_opt)), n_opt)[1] <= 0.01 and motor_rpm(r) <= RPM_CAP]
         if not feas:
             out["strict"][fam] = None
             continue
@@ -969,6 +984,9 @@ def study_mech(res, n=100_000, seed=33, arm_m=0.6, sf=2.0, sigma_y_mpa=355.0):
     tools = {"baseline": Tool2()}
     for k in ("allowable|0", "allowable|0.75|creep"):
         tools["optimized " + k] = tool_from(opt[k]["best_feasible"], "allowable", 0.75 if "0.75" in k else 0.0)
+    ba = opt["allowable|0.75|creep"].get("best_any")
+    if ba and motor_rpm(ba) > RPM_CAP:
+        tools["unrestricted allowable|0.75|creep"] = tool_from(ba, "allowable", 0.75)
     out = {}
     S = sample_inputs("mix", n, seed)
     for name, t in tools.items():
@@ -984,7 +1002,7 @@ def study_mech(res, n=100_000, seed=33, arm_m=0.6, sf=2.0, sigma_y_mpa=355.0):
         Vg = np.where(ok, chi * E / (p1 * np.log(np.where(ok, p2 / p1, 2.0))), np.nan) * 1e3             # litres of gas at precharge (isothermal)
         n_motor = r["Q_run"] * GPM_LPM * 1000.0 / t.D_cc                                              # motor rpm at the running flow
         P_motor = r["dP_req"] * PSI * r["Q_run"] * GPM_M3S / 1e3                                      # hydraulic power at the motor, kW
-        out[name] = dict(tool=dict(D=t.D_cc, R=t.ratio, mult=t.relief_mult, q=t.q_limit_gpm, acc=t.accumulator, cs=t.creep_start_gpm, ce=t.creep_end_gpm),
+        out[name] = dict(has_accumulator=bool(t.accumulator > 0), tool=dict(D=t.D_cc, R=t.ratio, mult=t.relief_mult, q=t.q_limit_gpm, acc=t.accumulator, cs=t.creep_start_gpm, ce=t.creep_end_gpm),
                          T_peak_p50=Tq(50), T_peak_p99=Tq(99), T_peak_p999=Tq(99.9), gearbox_rating_Nm=1.5 * Tq(99.9),
                          reaction_kN_p99=Tq(99) / arm_m / 1e3, arm_Z_cm3_p99=Tq(99) * sf / (sigma_y_mpa * 1e6) * 1e6, arm_m=arm_m, sf=sf, sigma_y_mpa=sigma_y_mpa,
                          motor_rpm_p50=float(np.median(n_motor)), motor_rpm_p95=float(np.percentile(n_motor, 95)), motor_kW_p50=float(np.median(P_motor)), motor_kW_p95=float(np.percentile(P_motor, 95)),
