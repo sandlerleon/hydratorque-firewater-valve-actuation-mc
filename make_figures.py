@@ -132,7 +132,7 @@ def fig_grid():
             for j in range(M.shape[1]):
                 a.text(j, i, "%.0f" % M[i, j], ha="center", va="center", fontsize=7.5, color="w" if (M[i, j] < M.mean()) == (key == "safe") else "k")
         a.set_xlabel("gear ratio"); a.set_ylabel("motor displacement (cc/rev)"); a.set_title(title, fontsize=9); fig.colorbar(im, ax=a, shrink=.8)
-    save(fig, "Fig5_design_space.png")
+    save(fig, "Fig6_design_space.png")
 
 
 # ---- Fig 6 Pareto
@@ -141,20 +141,28 @@ def fig_pareto():
     cols = {"allowable|0": BL, "median|0": GY, "allowable|0.75": GR, "median|0.75": OR}
     labs = {"allowable|0": "allowable basis, no accumulator", "median|0": "median basis, no accumulator", "allowable|0.75": "allowable basis, accumulator 0.75", "median|0.75": "median basis, accumulator 0.75"}
     for k, v in O.items():
+        if k.endswith("creep"):
+            continue
         d = v["designs"]; c = cols[k]
         ax[0].scatter([100 * x["overtorque"] for x in d], [100 * x["safe"] for x in d], s=4, color=c, alpha=.25)
         xs = np.array([100 * x["overtorque"] for x in d]); ys = np.array([100 * x["safe"] for x in d]); o = np.argsort(xs)
         env = np.maximum.accumulate(ys[o])
         ax[0].step(xs[o], env, where="post", color=c, lw=1.6, label=labs[k])
+    for k, v in O.items():
+        if not k.endswith("creep"):
+            continue
+        d = v["designs"]; c = cols[k[:-6]]
+        xs = np.array([100 * x["overtorque"] for x in d]); ys = np.array([100 * x["safe"] for x in d]); o = np.argsort(xs)
+        ax[0].step(xs[o], np.maximum.accumulate(ys[o]), where="post", color=c, lw=1.6, ls="--", label=labs[k[:-6]] + ", creep")
     bl = R["baseline"]; ax[0].plot(100 * bl["overtorque"]["p"], 100 * bl["success_safe"]["p"], "k*", ms=11, label="baseline tool")
     ax[0].axvline(1, color="k", ls=":"); ax[0].set_xlim(0, 25); ax[0].set_ylim(30, 75)
-    ax[0].set_xlabel("over-torque probability (%)"); ax[0].set_ylabel("success without over-torque (%)"); ax[0].set_title("(a) designs and best safe-stroke probability reached", fontsize=9); ax[0].legend(frameon=False, fontsize=6.3, loc="lower right")
+    ax[0].set_xlabel("over-torque probability (%)"); ax[0].set_ylabel("success without over-torque (%)"); ax[0].set_title("(a) designs and best safe-stroke probability reached", fontsize=9); ax[0].legend(frameon=False, fontsize=5.6, loc="lower right", ncol=1)
     # (b) water per stroke along the frontier of the allowable/0.75 family
     v = O["allowable|0.75"]; d = v["designs"]
     sc = ax[1].scatter([100 * x["overtorque"] for x in d], [x["volume"] for x in d], c=[100 * x["safe"] for x in d], s=6, cmap="viridis")
     ax[1].set_xlim(0, 25); ax[1].set_ylim(0, 3500); ax[1].set_xlabel("over-torque probability (%)"); ax[1].set_ylabel("median water per stroke (L)")
     ax[1].set_title("(b) water per stroke (accumulator 0.75, allowable basis)", fontsize=9); fig.colorbar(sc, ax=ax[1], label="success without over-torque (%)")
-    save(fig, "Fig6_pareto.png")
+    save(fig, "Fig8_pareto.png")
 
 
 # ---- Fig 7 robustness
@@ -162,6 +170,7 @@ def fig_robust():
     Rb = R["robust"]; sc = list(next(iter(Rb.values()))["scenarios"])
     want = ["baseline (chart 2x median, no accumulator)", "baseline + accumulator 0.75", "optimized allowable|0", "optimized allowable|0.75"]
     want += [n for n in Rb if n.startswith("robust allowable|0.75")][:1]
+    want += [n for n in Rb if n == "optimized allowable|0.75|creep"]
     pick = [n for n in want if n in Rb]
     fig, ax = plt.subplots(2, 1, figsize=(8.4, 5.6), sharex=True); x = np.arange(len(sc)); w = 0.8 / max(len(pick), 1)
     cols = [GY, PU, BL, GR, OR, RD]
@@ -171,7 +180,7 @@ def fig_robust():
         ax[1].bar(xs, [100 * Rb[n]["scenarios"][s_]["overtorque"] for s_ in sc], w, color=cols[i % 6])
     ax[0].set_ylabel("success without\nover-torque (%)"); ax[1].set_ylabel("over-torque\nprobability (%)"); ax[1].axhline(1, color="k", ls=":")
     ax[1].set_xticks(x); ax[1].set_xticklabels(sc, rotation=25, ha="right", fontsize=7.5); ax[0].set_ylim(0, 88); ax[0].legend(frameon=False, fontsize=6.3, ncol=2)
-    save(fig, "Fig7_robustness.png")
+    save(fig, "Fig9_robustness.png")
 
 
 # ---- Fig 8 flow limiter and reserve
@@ -189,7 +198,7 @@ def fig_flow():
     c.semilogx([r["mult"] for r in Rv], [100 * r["safe"] for r in Rv], "-s", ms=3.5, color=BL, label="success w/o over-torque, no rule")
     c.semilogx([r["mult"] for r in Rv], [100 * r["safe_adaptive"] for r in Rv], "-^", ms=3.5, color=GR, label="success w/o over-torque, adaptive rule")
     c.set_xlabel("spare flow (multiple of prior)"); c.set_ylabel("probability (%)"); c.set_title("(c) firefighting reserve", fontsize=9); c.legend(frameon=False, fontsize=6.3)
-    save(fig, "Fig8_flow_reserve.png")
+    save(fig, "Fig7_flow_reserve.png")
 
 
 # ---- Fig 9 sensitivity
@@ -202,7 +211,7 @@ def fig_sens():
     for a, key, title in ((ax[0], "prcc_margin", "(a) torque margin ln(T_cap/T_break)"), (ax[1], "prcc_peak_ratio", "(b) peak ratio ln(T_peak/T_allow)")):
         d = s[key]; ks = sorted(d, key=lambda k: abs(d[k]))[-12:]; a.barh([nice.get(k, k) for k in ks], [d[k] for k in ks], color=[BL if d[k] > 0 else OR for k in ks])
         a.set_xlabel("partial rank correlation"); a.set_title(title, fontsize=9); a.tick_params(axis="y", labelsize=7)
-    save(fig, "Fig9_sensitivity.png")
+    save(fig, "Fig11_sensitivity.png")
 
 
 # ---- Fig 10 time and water
@@ -214,7 +223,7 @@ def fig_time():
     ax[0].axvline(15, color="k", ls=":"); ax[0].set_xlim(0, 25); ax[0].set_xlabel("operating time to stroke (min)"); ax[0].set_ylabel("cumulative success (%)"); ax[0].legend(frameon=False, fontsize=6.5)
     ax[0].set_title("(a) stroking time", fontsize=9)
     ax[1].hist(r["volume_L"][ok], 60, color=BL, alpha=.8); ax[1].set_xlabel("water used in one stroke (L)"); ax[1].set_ylabel("count"); ax[1].set_title("(b) water per successful stroke, baseline", fontsize=9)
-    save(fig, "Fig10_time_water.png")
+    save(fig, "Fig12_time_water.png")
 
 
 # ---- Fig 11 benchmarks
@@ -223,7 +232,7 @@ def fig_bench():
     ax.bar(x - w / 2, [100 * B[n]["success"] for n in names], w, color=BL, label="success")
     ax.bar(x + w / 2, [100 * B[n]["safe"] for n in names], w, color=GR, label="success without over-torque")
     ax.set_xticks(x); ax.set_xticklabels([n.replace(", ", ",\n").replace(" (", "\n(") for n in names], fontsize=6.5); ax.set_ylabel("probability (%)"); ax.legend(frameon=False, fontsize=7)
-    save(fig, "Fig11_benchmarks.png")
+    save(fig, "Fig13_benchmarks.png")
 
 
 def fig_surge_het():
@@ -237,7 +246,32 @@ def fig_surge_het():
             b.bar(x + (i - 0.5) * w, [100 * Hh[k]["per_class"][n_]["overtorque"] for n_ in names], w, color=c, label=lab)
     b.axhline(1, color="k", ls=":"); b.set_xticks(x); b.set_xticklabels(names, rotation=20, ha="right", fontsize=7); b.set_ylabel("over-torque probability (%)")
     b.set_title("(b) stem strength differs between classes", fontsize=9); b.legend(frameon=False, fontsize=6.5)
-    save(fig, "Fig12_surge_hetero.png")
+    save(fig, "Fig10_surge_hetero.png")
+
+
+def fig_creep():
+    C = R["creep"]; fig, ax = plt.subplots(1, 3, figsize=(10.2, 3.2))
+    def pick(acc, cs, ce, ns=1, ne=2):
+        return [r for r in C if r["acc"] == acc and r["cs"] == cs and r["ce"] == ce and r["ns"] == ns and r["ne"] == ne][0]
+    ends = [0, 40, 20, 10]
+    a = ax[0]
+    for acc, c, lab in ((0.0, RD, "no accumulator"), (0.75, GR, "accumulator 0.75")):
+        a.plot(range(len(ends)), [100 * pick(acc, 0, e)["overtorque"] for e in ends], "-o", ms=4, color=c, label=lab)
+    a.set_xticks(range(len(ends))); a.set_xticklabels(["none", "40", "20", "10"]); a.set_xlabel("flow during the last 2 turns (gpm)"); a.set_ylabel("over-torque probability (%)")
+    a.set_title("(a) creep at the end of travel", fontsize=9); a.legend(frameon=False, fontsize=7)
+    b = ax[1]
+    for acc, c, lab in ((0.0, RD, "no accumulator"), (0.75, GR, "accumulator 0.75")):
+        b.plot(range(len(ends)), [100 * pick(acc, 0, e)["safe"] for e in ends], "-o", ms=4, color=c, label=lab)
+        b.plot(range(len(ends)), [100 * pick(acc, 0, e)["success"] for e in ends], "--s", ms=3, color=c, alpha=.6)
+    b.set_xticks(range(len(ends))); b.set_xticklabels(["none", "40", "20", "10"]); b.set_xlabel("flow during the last 2 turns (gpm)"); b.set_ylabel("probability (%)")
+    b.set_title("(b) safe stroke (solid) and success (dashed)", fontsize=9)
+    c_ = ax[2]
+    variants = [(0, 0, 1, 2, "none"), (0, 20, 1, 2, "end 20"), (10, 10, 1, 2, "10/10, 1+2 turns"), (10, 10, 2, 4, "10/10, 2+4 turns"), (10, 10, 4, 8, "10/10, 4+8 turns")]
+    x = np.arange(len(variants)); w = 0.38
+    c_.bar(x - w / 2, [pick(0.0, v[0], v[1], v[2], v[3])["t_med"] for v in variants], w, color=BL, label="median stroking time (min)")
+    c_.bar(x + w / 2, [100 * pick(0.0, v[0], v[1], v[2], v[3])["time_ok"] / 10 for v in variants], w, color=OR, label="in time (% / 10)")
+    c_.set_xticks(x); c_.set_xticklabels([v[4] for v in variants], rotation=20, ha="right", fontsize=7); c_.set_title("(c) time cost of the slow phases", fontsize=9); c_.legend(frameon=False, fontsize=6.5)
+    save(fig, "Fig5_creep.png")
 
 
 def fig_convergence():
@@ -254,5 +288,5 @@ def fig_kit():
 
 
 if __name__ == "__main__":
-    for f in (fig_arch, fig_verify, fig_capability, fig_relief, fig_grid, fig_pareto, fig_robust, fig_flow, fig_sens, fig_time, fig_bench, fig_surge_het, fig_convergence, fig_kit):
+    for f in (fig_arch, fig_verify, fig_capability, fig_relief, fig_grid, fig_pareto, fig_robust, fig_flow, fig_sens, fig_time, fig_bench, fig_surge_het, fig_creep, fig_convergence, fig_kit):
         f(); print(f.__name__, "ok")

@@ -132,3 +132,48 @@ def test_water_volume_is_flow_times_time():
     r = H.simulate("mix", H.Tool2(), 20_000, 3)
     ok = r["success"]
     assert np.allclose(r["volume_L"][ok], r["Q_run"][ok] * H.GPM_LPM * r["t_min"][ok])
+
+
+# ---------------------------------------------------------------------------- creep at the start and at the end of travel
+def test_creep_above_the_running_flow_changes_nothing():
+    S = H.sample_inputs("mix", 20_000, 12)
+    a = H.evaluate(H.Tool2(), S)
+    b = H.evaluate(replace(H.Tool2(), creep_start_gpm=1e6, creep_end_gpm=1e6), S)
+    assert np.array_equal(a["success"], b["success"]) and np.array_equal(a["overtorque"], b["overtorque"])
+    ok = np.isfinite(a["t_min"])
+    assert np.allclose(a["t_min"][ok], b["t_min"][ok], rtol=1e-9) and np.allclose(a["surge_psi"], b["surge_psi"])
+
+
+def test_end_creep_lowers_surge_and_adds_time():
+    S = H.sample_inputs("mix", 30_000, 12)
+    a = H.evaluate(H.Tool2(), S)
+    b = H.evaluate(replace(H.Tool2(), creep_end_gpm=15.0), S)
+    assert np.all(b["surge_psi"] <= a["surge_psi"] + 1e-12) and b["surge_psi"].mean() < a["surge_psi"].mean()
+    ok = np.isfinite(a["t_min"]) & np.isfinite(b["t_min"])
+    assert np.all(b["t_min"][ok] >= a["t_min"][ok] - 1e-12) and b["t_min"][ok].mean() > a["t_min"][ok].mean()
+    assert b["damage"].mean() <= a["damage"].mean() and b["overtorque"].mean() < a["overtorque"].mean()
+
+
+def test_start_creep_only_affects_valves_that_do_not_break_free():
+    S = H.sample_inputs("mix", 30_000, 12)
+    a = H.evaluate(H.Tool2(), S)
+    b = H.evaluate(replace(H.Tool2(), creep_start_gpm=15.0), S)
+    proceeds = a["break_ok"] & a["run_ok"]
+    assert np.allclose(a["surge_psi"][proceeds], b["surge_psi"][proceeds])        # the stall of a stroke that proceeds is at its end
+    assert np.all(b["surge_psi"][~proceeds] <= a["surge_psi"][~proceeds] + 1e-12)
+
+
+def test_creep_water_volume_is_the_sum_of_the_phases():
+    S = H.sample_inputs("mix", 20_000, 13)
+    t = replace(H.Tool2(), creep_start_gpm=20.0, creep_end_gpm=10.0, creep_turns_start=1.0, creep_turns_end=2.0)
+    r = H.evaluate(t, S); ok = r["success"]
+    assert np.all(np.isfinite(r["volume_L"][ok])) and np.all(r["volume_L"][ok] > 0)
+    assert np.all(r["volume_L"][ok] <= (r["Q_run"] * H.GPM_LPM * r["t_min"])[ok] + 1e-9)    # slow phases use less water than full flow for the same time
+
+
+def test_zero_creep_turns_is_no_creep():
+    S = H.sample_inputs("mix", 20_000, 14)
+    a = H.evaluate(H.Tool2(), S)
+    b = H.evaluate(replace(H.Tool2(), creep_start_gpm=10.0, creep_end_gpm=10.0, creep_turns_start=0.0, creep_turns_end=0.0), S)
+    ok = np.isfinite(a["t_min"])
+    assert np.allclose(a["t_min"][ok], b["t_min"][ok], rtol=1e-9) and np.array_equal(a["success"], b["success"])

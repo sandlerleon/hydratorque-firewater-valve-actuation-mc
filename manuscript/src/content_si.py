@@ -44,11 +44,17 @@ adds(("table", "Table S5. Relief-setting sweep, baseline tool (chart multiple of
       ["Basis", "Multiple", "Success", "Safe stroke", "Over-torque", "Damage"], rows, [1.2, 1.0, 1.0, 1.0, 1.0, 1.0], 15))
 adds(("h1", "S5. Optimization details"))
 rows = []
+for r in R["creep"]:
+    rows.append([n(r["acc"], 2), n(r["cs"]), n(r["ce"]), "%s + %s" % (n(r["ns"], 1), n(r["ne"], 1)), pc(r["success"], 1), pc(r["safe"], 1), pc(r["overtorque"], 1), pc(r["damage"], 2), pc(r["time_ok"], 1), n(r["t_med"], 1), n(r["volume"])])
+adds(("table", "Table S5b. Creep study, all cases (baseline tool): accumulator fraction, creep flows (gpm) at the start and at the end of travel, turns at those flows, success, safe stroke, over-torque, damage, "
+               "strokes in time, median time (min) and water (L).", ["Accum.", "Start", "End", "Turns", "Success", "Safe", "Over-torque", "Damage", "In time", "Time", "Water"], rows, [0.6, 0.5, 0.5, 0.7, 0.7, 0.6, 0.8, 0.7, 0.7, 0.5, 0.6], 14))
+rows = []
 for k, v in OPT.items():
     bf = v["best_feasible"]
-    rows.append([k, n(v["n_feasible"]), n(len(v["pareto"])), n(bf["D"]), n(bf["R"]), n(bf["mult"], 2), n(bf["q"]), pc(bf["safe"], 1), pc(bf["overtorque"], 2), n(bf["volume"])])
+    crs = ("%s / %s" % (n(bf["cs"]) if bf["cs"] < bf["q"] else "-", n(bf["ce"]) if bf["ce"] < bf["q"] else "-")) if "cs" in bf else "none"
+    rows.append([k, n(v["n_feasible"]), n(len(v["pareto"])), n(bf["D"]), n(bf["R"]), n(bf["mult"], 2), n(bf["q"]), crs, pc(bf["safe"], 1), pc(bf["overtorque"], 2), n(bf["volume"])])
 adds(("table", "Table S6. Search results by family (basis|accumulator fraction): feasible designs under the 1% constraint, size of the non-dominated set, and the best feasible design (in-sample).",
-      ["Family", "Feasible", "Non-dominated", "D", "R", "Relief", "Q limit", "Safe", "Over-torque", "Water (L)"], rows, [1.3, 0.7, 0.9, 0.5, 0.5, 0.6, 0.6, 0.6, 0.8, 0.7], 15))
+      ["Family", "Feasible", "Non-dominated", "D", "R", "Relief", "Q limit", "Creep", "Safe", "Over-torque", "Water (L)"], rows, [1.5, 0.7, 0.9, 0.5, 0.5, 0.6, 0.6, 0.8, 0.6, 0.8, 0.7], 14))
 rows = []
 for c, d in R["class_specific"].items():
     rows.append([c, n(d["D"]), n(d["R"]), n(d["mult"], 2), n(d["q"]), pc(d["safe"], 1), pc(d["overtorque"], 2)] if d else [c, "none", "", "", "", "", ""])

@@ -15,6 +15,7 @@ from common import *
 
 OOS = R["robust"]
 o0, o75 = OOS["optimized allowable|0"]["out_of_sample"], OOS["optimized allowable|0.75"]["out_of_sample"]
+oc0, oc75 = OOS["optimized allowable|0|creep"]["out_of_sample"], OOS["optimized allowable|0.75|creep"]["out_of_sample"]
 d = Document()
 st = d.styles["Normal"]; st.font.name = "Calibri"; st.font.size = Pt(11); st.paragraph_format.space_after = Pt(8)
 for s in d.sections:
@@ -45,12 +46,12 @@ para("The manuscript makes four contributions. (i) A probabilistic model with an
      "of the allowable stem torque, stem damage and violation of the firefighting reserve. The model shows that the first-order estimate of about 80%% success was optimistic: a safe stroke occurs in %s "
      "of the draws for the baseline tool, with an over-torque probability of %s. (iii) A safety-constrained multi-objective design study, whose optimum is re-evaluated out of sample and under deliberately "
      "wrong input distributions: with a hose-side accumulator and a relief chart set from the stem strength, the over-torque probability can be brought to 1%% at a cost of %s to %s percentage points of "
-     "safe strokes, but the optimum does not survive a weaker stem or a larger surge. (iv) A reconciliation of the water budget: a stroke uses about %s L of water, not the 50 to 100 L/min first assumed."
-     % (pc(BASE["success_safe"]["p"], 0), pc(BASE["overtorque"]["p"], 0), n(100 * (BASE["success_safe"]["p"] - o75["safe"]), 0), n(100 * (BASE["success_safe"]["p"] - o0["safe"]), 0), n(round(BASE["volume_median_L"], -2))))
+     "safe strokes, a cost that a slow creep flow at the start and at the end of travel recovers in part (%s to %s points), but the optimum does not survive a weaker stem or a larger surge. (iv) A reconciliation of the water budget: a stroke uses about %s L of water, not the 50 to 100 L/min first assumed."
+     % (pc(BASE["success_safe"]["p"], 0), pc(BASE["overtorque"]["p"], 0), n(100 * (BASE["success_safe"]["p"] - o75["safe"]), 0), n(100 * (BASE["success_safe"]["p"] - o0["safe"]), 0), n(100 * (oc75["safe"] - o75["safe"]), 0), n(100 * (oc0["safe"] - o0["safe"]), 0), n(round(BASE["volume_median_L"], -2))))
 para("The study is explicit about what it is. Every input distribution is an assumed prior, because no published distribution of breakaway torques, surge parameters or spare firewater flows was found; "
      "the model is verified numerically (draw-for-draw equivalence with the earlier model, closed-form checks, energy balance, %s automated tests) but not validated physically; and the results are "
      "simulation outputs under those assumptions, not measurements. The manuscript lists the measurements that would replace the assumptions, and it makes no claim of superiority over conventional operators."
-     % "20")
+     % "25")
 para("The code and results are openly available at %s and archived at https://doi.org/%s (code, all versions); the manuscript and its Supplementary Information are archived at https://doi.org/%s "
      "(all versions). One command regenerates every number and figure." % (GITHUB, DOIS["code_concept"], DOIS["paper_concept"]))
 para("Disclosure. The concept originated as a white paper that I prepared for an industrial scouting challenge; I have filed no patent, and no contract or payment has resulted. "

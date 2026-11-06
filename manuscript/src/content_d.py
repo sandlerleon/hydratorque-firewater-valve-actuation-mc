@@ -14,12 +14,13 @@ add(("p", "Three results are specific enough to guide a bench programme, and eac
           "it. The tool is strong enough, and the hose and the circuit are not the limiting elements: a lossless tool gains about one percentage point of success. What limits the safe-stroke "
           "probability is the torque that the tool can deliver at stall, which is set by a relief valve whose pressure is low for small valves and which cannot relieve a surge in time. The relief chart "
           "and the surge, not the motor, are the design problem. Second, a chart that is computed from the stem strength, together with a hose-side accumulator, brings the over-torque probability to "
-          "1%% at a cost of %s to %s percentage points of safe strokes relative to the baseline; the cost is paid in valves that the tool then cannot break free, and those valves need a higher-pressure "
+          "1%% at a cost of %s to %s percentage points of safe strokes relative to the baseline, a cost that a slow approach to the end of travel recovers in part (%s to %s points); the rest is paid in valves that the tool then cannot break free, and those valves need a higher-pressure "
           "source or another tool. Third, the water budget is a design variable. A stroke uses of the order of a thousand litres, and whether that is acceptable depends on a spare flow that the "
           "operator has to know."
-          % (n(100 * (BASE["success_safe"]["p"] - o75["safe"]), 0), n(100 * (BASE["success_safe"]["p"] - o0["safe"]), 0))))
+          % (n(100 * (BASE["success_safe"]["p"] - o75["safe"]), 0), n(100 * (BASE["success_safe"]["p"] - o0["safe"]), 0), n(100 * (OOS["optimized allowable|0.75|creep"]["out_of_sample"]["safe"] - o75["safe"]), 0),
+         n(100 * (OOS["optimized allowable|0|creep"]["out_of_sample"]["safe"] - o0["safe"]), 0))))
 add(("p", "The results suggest the following design hypotheses, to be tested on the bench before they are rules: a relief chart set at about half of the nominal allowable stem torque of the valve; a "
-          "hose-side accumulator or an equivalent surge absorber; a flow limit between %s and %s gpm for strokes of 30 to 70 turns, with the adaptive reduction on shared sources; a product of displacement "
+          "hose-side accumulator or an equivalent surge absorber; a variable flow limiter that creeps for the first turn and the last two turns of the stroke; a flow limit between %s and %s gpm for strokes of 30 to 70 turns, with the adaptive reduction on shared sources; a product of displacement "
           "and gear ratio of about %s to %s; and a dedicated source for the large valves and for any site that has not measured its spare firewater flow. The numbers will move with the priors, and "
           "the robustness analysis shows in which direction: a weaker stem or a larger surge calls for a lower chart."
           % (n(min(BEST[k]["q"] for k in BEST)), n(max(BEST[k]["q"] for k in BEST)), n(round(min(dr) / 500) * 500), n(round(max(dr) / 500) * 500))))
@@ -28,7 +29,7 @@ add(("p", "Existing portable valve operators run on electricity, batteries, gaso
           "a hydrant-attached remote-controlled valve opens a flow channel with a pilot-operated piston [@Kolacz2014]; and an oscillatory actuator controls a valve on a fire truck [@Leete1992]. Water-hydraulic motors "
           "are established components [@Yang2015;@Majdic2019], and the pressure surge in water lines is well understood [@Ghidaoui2005]. The contribution claimed here is neither the use of water to turn a motor "
           "nor the surge on stall, but the joint probabilistic treatment of a firewater-powered tool: the safe stroke as a combined event, the surge-aware relief chart, the water and firefighting-reserve "
-          "constraints, and the test of the optimum against wrong priors. The comparison with conventional operators (Section 6.8) rests on assumed ratings and availabilities, and the study does not "
+          "constraints, and the test of the optimum against wrong priors. The comparison with conventional operators (Section @S:bench@) rests on assumed ratings and availabilities, and the study does not "
           "claim superiority over any of them. A preliminary search of the literature and of patents is not a proof of novelty, and a full prior-art and freedom-to-operate review "
           "would be needed before any claim of that kind."))
 add(("h2", "7.3 Deployment constraints"))
@@ -43,7 +44,7 @@ add(("p", "Four constraints follow from the setting and are not captured by the 
 add(("h1", "8. Limitations and future validation"))
 add(("p", "The principal limitation is that every input distribution is an assumed prior. No published distribution of breakaway torques of the industrial valves of interest was found; the "
           "surge parameters, the efficiency at stall and the spare flows of firewater sources are assumptions. A larger number of simulations does not compensate for uncertain input distributions, and the "
-          "robustness analysis of Section 6.6 is the only protection against that. The model is lumped: the motor, the relief valve and the hose are not simulated as a transient system, the relief valve acts as "
+          "robustness analysis of Section @S:robust@ is the only protection against that. The model is lumped: the motor, the relief valve and the hose are not simulated as a transient system, the relief valve acts as "
           "an override with sampled overshoot, the hose compliance is represented by a sampled wave speed, and the stem is a single strength with a sampled yield margin. The inputs are independent, although "
           "valve size, age, stem strength and breakaway torque are correlated in reality. The reaction arm, the bearings and the gearbox are not checked against the stall torque. The comparison with "
           "conventional operators uses ratings that are assumed. The model is verified numerically, not validated physically [@Oberkampf2002], and the paper's numbers should not be quoted as field reliability."))
@@ -58,7 +59,10 @@ add(("num", "A simulation of a firewater-powered portable valve operator, with a
             "occurs in %s of the draws for the baseline tool, against the 80%% success reported by the first-order model; the over-torque probability is %s, not 5%%, and the stem-damage probability is %s. "
             "These are simulation outputs under assumed priors." % (pc(BASE["success_safe"]["p"], 0), pc(BASE["overtorque"]["p"], 0), pc(BASE["damage"]["p"], 1))))
 add(("num", "The surge on stall is the main source of over-torque, and it is largest in relative terms for small valves, whose relief pressure is low. A hose-side accumulator lowers the over-torque "
-            "probability of the baseline tool from %s to %s." % (pc(R["accumulator"]["0.0"]["overtorque"], 0), pc(R["accumulator"]["0.75"]["overtorque"], 0))))
+            "probability of the baseline tool from %s to %s, and a slow creep flow for the last two turns of the stroke lowers it from %s to %s (two turns at 20 gpm), at a cost of about %s minutes of stroking time."
+            % (pc(R["accumulator"]["0.0"]["overtorque"], 0), pc(R["accumulator"]["0.75"]["overtorque"], 0), pc([r for r in R["creep"] if r["acc"] == 0 and r["cs"] == 0 and r["ce"] == 0][0]["overtorque"], 0),
+               pc([r for r in R["creep"] if r["acc"] == 0 and r["cs"] == 0 and r["ce"] == 20 and r["ns"] == 1][0]["overtorque"], 0),
+               n([r for r in R["creep"] if r["acc"] == 0 and r["cs"] == 0 and r["ce"] == 20 and r["ns"] == 1][0]["t_med"] - [r for r in R["creep"] if r["acc"] == 0 and r["cs"] == 0 and r["ce"] == 0][0]["t_med"], 1))))
 add(("num", "Under a 1%% limit on the over-torque probability, which is an illustrative constraint, a design exists in every family searched, and it holds out of sample; the cost is %s to %s percentage points of "
             "the safe-stroke probability. A single configuration is almost as good as valve-class-specific ones; the relief chart is what has to be specific."
             % (n(100 * (BASE["success_safe"]["p"] - o75["safe"]), 0), n(100 * (BASE["success_safe"]["p"] - o0["safe"]), 0))))

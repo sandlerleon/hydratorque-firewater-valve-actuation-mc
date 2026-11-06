@@ -28,7 +28,7 @@ add(("p", "The question matters because the three requirements conflict. Raising
 add(("p", "This paper provides that envelope for a concept-stage tool, in four steps. First, it formulates a probabilistic model of the tool with an explicit hydraulic circuit (source characteristic, hose, "
           "motor leakage and efficiency, relief override, and the pressure surge on stall), in which each added mechanism can be switched off so that the earlier first-order model is recovered exactly. "
           "Second, it defines the safety criteria separately: success of the stroke, exceedance of the allowable stem torque, damage to the stem, and violation of the firefighting reserve. Third, it "
-          "formulates a multi-objective design problem, maximizing the probability of a safe stroke subject to a limit on the over-torque probability and on water use, and tests the optimum out of "
+          "formulates a multi-objective design problem, in which the motor, the ratio, the relief chart, the flow limit and a slow creep flow at the start and the end of travel are chosen to maximize the probability of a safe stroke subject to a limit on the over-torque probability and on water use, and tests the optimum out of "
           "sample and under deliberately wrong input distributions. Fourth, it compares the tool with an idealised water-hydraulic benchmark and with capability-limited conventional operators. All "
           "input distributions are assumed priors for a concept-stage study, and the paper states which of its conclusions depend on them."))
 add(("p", "Section 2 describes the architecture and the operating rule, Section 3 the model, Section 4 the probabilistic methodology and its verification, Section 5 the optimization problem, "
@@ -36,18 +36,18 @@ add(("p", "Section 2 describes the architecture and the operating rule, Section 
 
 # ============================================================================================ 2 System architecture
 add(("h1", "2. System architecture and operating rule"))
-add(("p", "The tool (Fig. 1) is a portable water-hydraulic torque operator. A hose connects a hydrant, a firewater tap, a fire truck or a portable pump to a Smart Power Coupling "
+add(("p", "The tool (Fig. @F:arch@) is a portable water-hydraulic torque operator. A hose connects a hydrant, a firewater tap, a fire truck or a portable pump to a Smart Power Coupling "
           "that carries a cleanable strainer, a flow limiter, a slow-opening shut-off valve and a mechanical pressure gauge. Water drives a gerotor, piston or vane motor of 150 to 400 cc per revolution "
           "[@Yang2015;@Majdic2019]. A multi-stage planetary reducer of 100:1 to 500:1 multiplies the torque, and a universal interface with a reaction arm engages handwheels, operating nuts and part-turn "
           "valves in the manner of the standard actuator attachments [@ISO5210]. An adjustable inlet relief valve limits the pressure drop across the motor, and therefore the torque, because motor "
           "torque is proportional to that pressure drop; a stall shows as a pressure rise, which tells the operator that the end of travel has been reached. A hose-side accumulator is an option "
-          "to absorb the pressure surge on stall. The motor passes water continuously while it turns, so a discharge hose routes the exhaust to a drain. Everything in the baseline is mechanical, "
+          "to absorb the pressure surge on stall, and the flow limiter can be made adjustable so that the tool runs at a slow creep flow for the first turns of the stroke, to build torque gradually against a stuck valve, and for the last turns before the end of travel, to approach the stop slowly. The motor passes water continuously while it turns, so a discharge hose routes the exhaust to a drain. Everything in the baseline is mechanical, "
           "which keeps it clear of the electrical ignition concerns of classified areas and places it under the assessment of non-electrical equipment [@ISO80079]."))
-add(("fig", "Fig1_architecture.png", "Fig. 1. Architecture of the firewater-powered valve operator. Water from a shared or dedicated source reaches the Smart Power Coupling "
+add(("fig", "Fig1_architecture.png", "Fig. @F:arch@. Architecture of the firewater-powered valve operator. Water from a shared or dedicated source reaches the Smart Power Coupling "
             "(strainer and flow limiter, slow-opening shut-off, inlet relief valve that limits the torque, optional accumulator), drives the motor and gearbox, and is discharged "
             "through a hose. The torque is delivered to the valve stem through the interface and a reaction arm.", 6.6))
-add(("p", "Two design variables are discrete in practice and are treated as such: the motor displacement $D$ and the gear ratio $R$ are chosen from a kit. Two are operating variables: the relief setting, "
-          "which is read from a torque chart, and the flow limit. The chart is the safety-critical document of the tool. Two bases are compared: a chart expressed as a multiple of the median "
+add(("p", "Two design variables are discrete in practice and are treated as such: the motor displacement $D$ and the gear ratio $R$ are chosen from a kit. Four are operating variables: the relief setting, "
+          "which is read from a torque chart, the flow limit, and the creep flows at the start and at the end of travel, each held for a few turns (one at the start and two at the end in the study). The chart is the safety-critical document of the tool. Two bases are compared: a chart expressed as a multiple of the median "
           "breakaway torque of the valve class, which is what a designer who knows only the operating torque of the valve would use, and a chart expressed as a fraction of the nominal "
           "allowable stem torque, which requires the valve data sheet."))
 add(("p", "The tool is subject to one operating rule that the model enforces: it must not draw water from a fire-protection system when doing so could compromise the performance that system must "
@@ -79,7 +79,7 @@ add(("h2", "3.3 Motor speed, leakage, stroke time and water use"))
 add(("p", "A water-hydraulic motor leaks through its clearances, and the leakage is nearly proportional to the pressure drop because the viscosity of water is low. The flow into the motor is therefore"))
 add(("eq", r"Q=D\,n_{\rm m}+c_{\rm L}\,\Delta p_{\rm m},\qquad c_{\rm L}=\left(\frac{1}{\eta_{\rm v}}-1\right)\frac{D\,n_{\rm ref}}{\Delta p_{\rm ref}}", 5))
 add(("p", "where $n_{\\rm m}$ is the motor speed, $\\eta_{\\rm v}$ the volumetric efficiency at the reference point ($\\Delta p_{\\rm ref}=100$ psi, $n_{\\rm ref}=100$ rpm) and $c_{\\rm L}$ the leakage coefficient. "
-          "The output speed is $n_{\\rm out}=n_{\\rm m}/R$, the stroking time is $t=N_{\\rm turns}/n_{\\rm out}$ for $N_{\\rm turns}$ handwheel turns, and the water used in one stroke is $V=Q\\,t$. A stroke is "
+          "The output speed is $n_{\\rm out}=n_{\\rm m}/R$, the stroking time is $t=N_{\\rm turns}/n_{\\rm out}$ for $N_{\\rm turns}$ handwheel turns, and the water used in one stroke is $V=Q\\,t$. With creep flows $Q_{\\rm s}$ and $Q_{\\rm e}$ held for $N_{\\rm s}$ and $N_{\\rm e}$ turns, at output speeds $n_{\\rm s}$ and $n_{\\rm e}$, the time is $t=(N_{\\rm turns}-N_{\\rm s}-N_{\\rm e})/n_{\\rm out}+N_{\\rm s}/n_{\\rm s}+N_{\\rm e}/n_{\\rm e}$ and the water is the sum of the three phases. A stroke is "
           "required to be completed within 15 minutes of operating time, excluding set-up."))
 add(("h2", "3.4 Relief valve, stall and the pressure surge"))
 add(("p", "The relief valve opens at the set pressure $p_{\\rm set}$, which the chart derives from the valve class: $p_{\\rm set}=\\mu\\,T_{\\rm ref}/k_{\\rm T}^{\\rm nom}$ for a multiple $\\mu$ of a reference torque "
@@ -87,8 +87,8 @@ add(("p", "The relief valve opens at the set pressure $p_{\\rm set}$, which the 
           "flow. When the motor stops abruptly, at the end of travel or against an obstruction, the moving column of water produces a surge, estimated by the Joukowsky relation for "
           "an instantaneous stop and reduced when the stop takes longer than the wave takes to travel the hose and return [@Ghidaoui2005],"))
 add(("eq", r"\Delta p_{\rm J}=\rho\,a\,v\,\min\left\{1,\frac{2L}{a\,t_{\rm c}}\right\}\left(1-\chi\right)", 6))
-add(("p", "where $a$ is the wave speed in the compliant hose, $v=Q/A_{\\rm h}$ the velocity in the hose of cross-section $A_{\\rm h}$, $t_{\\rm c}$ the stopping time and $\\chi$ the fraction absorbed by an "
-          "accumulator. The peak pressure at the motor is the smaller of the unrelieved surge and the relief override,"))
+add(("p", "where $a$ is the wave speed in the compliant hose, $v=Q_{\\rm stall}/A_{\\rm h}$ the velocity in the hose of cross-section $A_{\\rm h}$ just before the stall, $t_{\\rm c}$ the stopping time and $\\chi$ the fraction absorbed by an "
+          "accumulator. The flow before the stall is the end creep flow $Q_{\\rm e}$ when the stroke proceeds to its end, the start creep flow $Q_{\\rm s}$ when the valve does not break free (the tool then stalls at the start), and the running flow when there is no creep. The peak pressure at the motor is the smaller of the unrelieved surge and the relief override,"))
 add(("eq", r"p_{\rm peak}=\min\left\{p_{\rm s}+\Delta p_{\rm J},\ \ p_{\rm set}\left(1+\varepsilon_{\rm r}\right)+\kappa\,\Delta p_{\rm J}\right\}", 7))
 add(("p", "where $\\kappa$ is the fraction of the surge that the relief valve does not relieve in time. The peak torque is $T_{\\rm peak}=k_{\\rm T}^{\\rm st}\\,p_{\\rm peak}$, with the stall "
           "constant $k_{\\rm T}^{\\rm st}$ of Eq. (2) and the reduced efficiency. Without a relief valve $p_{\\rm peak}=p_{\\rm s}+\\Delta p_{\\rm J}$."))

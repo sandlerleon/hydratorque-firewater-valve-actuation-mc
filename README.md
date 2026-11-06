@@ -20,14 +20,16 @@ A portable water-hydraulic operator (motor displacement D, planetary ratio R, to
 
 Under a 1% limit on the over-torque probability (an illustrative constraint) the best design of each family holds out of sample (1.0% and 1.0% over-torque) at a safe-stroke probability of 53.8% (no accumulator) and 59.9% (hose-side accumulator absorbing 75% of the surge), against 62.6% for the baseline. The optimum survives wrong priors for valve torque, supply, seizure, efficiency and fouling, but **not** a stem 30% weaker than its data sheet (13% over-torque) or a surge twice the prior.
 
+**Creep (v2.1.0).** An adjustable flow limiter that runs slowly for the first turn and the last two turns of the stroke lowers the flow that the stall has to stop, and with it the surge: on the baseline tool two turns at 20 gpm lower the over-torque probability from 15.2% to 8.9% and raise the safe-stroke probability from 62.7% to 67.6% at a cost of about 0.8 min of stroking time. Under the 1% over-torque limit, allowing creep raises the best safe-stroke probability from 53.8% to 59.5% (no accumulator) and from 59.9% to 63.7% (accumulator).
+
 ## Quick start
 
 ```
 pip install -r requirements.txt
 python HydraTorque_MC.py --demo                          # verification suite (about 1 minute)
-python -m pytest -q tests                                # 20 automated checks
+python -m pytest -q tests                                # 25 automated checks
 python HydraTorque_MC.py --reproduce --outdir results    # every result of the paper (about 10 minutes, seed 2026)
-python make_figures.py                                   # figures 1-12 and S1-S2 from results/results.json
+python make_figures.py                                   # figures 1-13 and S1-S2 from results/results.json
 python manuscript/src/build_manuscript.py                # manuscript + Supplementary Information (needs python-docx)
 python HydraTorque_MC.py --legacy --outdir legacy_out    # the concept-stage study, unchanged
 ```
@@ -43,12 +45,13 @@ Draw-for-draw equivalence with the concept-stage model when the six added mechan
 | `HydraTorque_MC.py` | the model, studies and optimization (numpy + matplotlib) |
 | `tests/` | pytest checks |
 | `results/results.json` | all results of the paper (seed 2026) |
-| `figures/` | figures 1–12 and S1–S2 |
+| `figures/` | figures 1–13 and S1–S2 |
 | `manuscript/` | manuscript, Supplementary Information, cover letter (docx + pdf), ChemRxiv copy, builders in `manuscript/src` |
 | `legacy_v1/` | the concept-stage script and its results (unchanged) |
 
 ## Versions
 
+* **v2.1.0** (2026-11-05) — creep at the start and at the end of travel (`Tool2.creep_*`, `study_creep`, six-variable design search, 5 new tests); eight design families; figures and tables of the manuscript numbered in order of citation; `HydraTorque_MC.py` version 2.1.0.
 * **v2.0.0** (2026-11-04) — model 2: surge on stall, motor leakage, start-up efficiency, source characteristic, exhaust back-pressure; safe-stroke criterion; firefighting-reserve model with adaptive rule; safety-constrained multi-objective optimization with out-of-sample, robustness and chart-basis studies; benchmarks; water-budget reconciliation. Corrects two statements of the concept-stage white paper (see above).
 
 ## Archive and citation

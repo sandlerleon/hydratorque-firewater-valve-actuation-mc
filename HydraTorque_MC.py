@@ -37,7 +37,7 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 PSI = 6894.757            # Pa per psi
 GPM_LPM = 3.78541         # L/min per gpm
 GPM_M3S = 6.30902e-5      # m3/s per gpm
@@ -97,6 +97,10 @@ class Tool2:
     relief_tol: float = 0.05       # relative sd of the relief set-point
     reserve_rule: str = "none"     # "adaptive": on a shared source the flow limit is lowered to the spare flow of the source
     accumulator: float = 0.0       # fraction of the stall surge absorbed by a hose-side accumulator
+    creep_start_gpm: float = 0.0   # flow during the first turns of the stroke (0 = no creep): slow torque build-up against a stuck valve
+    creep_end_gpm: float = 0.0     # flow during the last turns before the end of travel (0 = no creep): slow approach to the stop
+    creep_turns_start: float = 1.0 # handwheel turns at the start flow
+    creep_turns_end: float = 2.0   # handwheel turns at the end flow
 
 
 @dataclass(frozen=True)
@@ -107,10 +111,11 @@ class Model2:
     start_eff: bool = True
     leak: bool = True
     surge: bool = True
+    creep: bool = True
 
     @staticmethod
     def legacy():
-        return Model2(False, False, False, False, False, False)
+        return Model2(False, False, False, False, False, False, False)
 
     def names(self):
         return [k for k in ("flow_supply", "foul_flow", "back", "start_eff", "leak", "surge") if getattr(self, k)]
@@ -255,21 +260,36 @@ def evaluate(tool=Tool2(), S=None, model=Model2()):
     Q_lim = np.minimum(tool.q_limit_gpm, Qspare) if tool.reserve_rule == "adaptive" else np.full(n, tool.q_limit_gpm)
     Q_run = np.minimum(Q_c, Q_lim)
     run_ok = head_ok & (T_run <= T_cap)
-    if model.leak:
-        leak_ref_cc = (1.0 / eta_v - 1.0) * tool.D_cc * 100.0              # cc/min at 100 psi and 100 rpm motor speed
-        q_cc = Q_run * GPM_LPM * 1000.0
-        n_m = np.maximum(q_cc - leak_ref_cc * dP_req / 100.0, 0.0) / tool.D_cc
-        n_out = n_m / R
-    else:
-        n_out = Q_run * GPM_LPM * 1000 * eta_v / tool.D_cc / R
+    leak_ref_cc = (1.0 / eta_v - 1.0) * tool.D_cc * 100.0                  # cc/min at 100 psi and 100 rpm motor speed
+
+    def speed(Qg):
+        """output speed (rpm) at a flow of Qg gpm, running pressure drop dP_req"""
+        if model.leak:
+            return np.maximum(Qg * GPM_LPM * 1000.0 - leak_ref_cc * dP_req / 100.0, 0.0) / tool.D_cc / R
+        return Qg * GPM_LPM * 1000 * eta_v / tool.D_cc / R
+
+    n_out = speed(Q_run)
+    creep_on = model.creep and (tool.creep_start_gpm > 0 or tool.creep_end_gpm > 0)
+    Ns = Ne = np.zeros(n)
+    Q_s = Q_e = Q_run
     with np.errstate(divide="ignore", invalid="ignore"):
-        t_min = np.where(n_out > 0, turns / n_out, np.inf)
+        if creep_on:
+            if tool.creep_start_gpm > 0:
+                Ns = np.minimum(tool.creep_turns_start, 0.25 * turns); Q_s = np.minimum(Q_run, tool.creep_start_gpm)
+            if tool.creep_end_gpm > 0:
+                Ne = np.minimum(tool.creep_turns_end, 0.25 * turns); Q_e = np.minimum(Q_run, tool.creep_end_gpm)
+            n_s, n_e = speed(Q_s), speed(Q_e)
+            ok_speed = (n_out > 0) & (n_s > 0) & (n_e > 0)
+            t_min = np.where(ok_speed, (turns - Ns - Ne) / n_out + Ns / n_s + Ne / n_e, np.inf)
+        else:
+            t_min = np.where(n_out > 0, turns / n_out, np.inf)
     time_ok = t_min <= T_MAX_MIN
     success = break_ok & run_ok & time_ok
 
     # stall: end of travel or obstruction (relief override, surge)
     if model.surge:
-        v = Q_run * GPM_M3S / (math.pi / 4 * (S["hose_in"] * INCH) ** 2)  # m/s in the supply hose just before the stall
+        Q_stall = np.where(break_ok & run_ok, Q_e, Q_s)                    # flow just before the stall: end-of-travel creep for a stroke that proceeds, start creep for a valve that does not break free
+        v = Q_stall * GPM_M3S / (math.pi / 4 * (S["hose_in"] * INCH) ** 2)  # m/s in the supply hose just before the stall
         L_m = S["L"] * FT
         red = np.minimum(1.0, (2 * L_m / S["a_wave"]) / S["t_close"])
         dJ = RHO * S["a_wave"] * v * red / PSI * (1.0 - tool.accumulator) * sh["surge_mult"]  # psi
@@ -294,7 +314,11 @@ def evaluate(tool=Tool2(), S=None, model=Model2()):
     P_tap = ((Ps - (Ps - P_RESID) * (Q_run / Qa) ** N_FLOW if model.flow_supply else Ps) - elev) * PSI * Q_run * GPM_M3S    # hydraulic power at the tap, elevation head included
     shared = SHARED[src]
     reserve_viol = shared & (Q_run > Qspare)
-    vol = np.where(np.isfinite(t_min), Q_run * GPM_LPM * np.where(np.isfinite(t_min), t_min, 0.0), np.nan)       # litres used in one stroke
+    if creep_on:
+        with np.errstate(divide="ignore", invalid="ignore"):
+            vol = np.where(np.isfinite(t_min), GPM_LPM * (Q_run * (turns - Ns - Ne) / n_out + np.where(Ns > 0, Q_s * Ns / n_s, 0.0) + np.where(Ne > 0, Q_e * Ne / n_e, 0.0)), np.nan)
+    else:
+        vol = np.where(np.isfinite(t_min), Q_run * GPM_LPM * np.where(np.isfinite(t_min), t_min, 0.0), np.nan)       # litres used in one stroke
     return dict(
         n=n, success=success, break_ok=break_ok, run_ok=run_ok, time_ok=time_ok, pressure_limited=press_limited & ~break_ok, relief_limited=relief_limited,
         overtorque=overtorque, damage=damage, success_safe=success & ~overtorque, success_nodamage=success & ~damage,
@@ -523,7 +547,7 @@ def lhs(n, dims, rng):
     return X
 
 
-def design_from_unit(u, basis):
+def design_from_unit(u, basis, creep=False):
     D = float(math.exp(math.log(60) + u[0] * (math.log(500) - math.log(60))))
     R = float(math.exp(math.log(60) + u[1] * (math.log(600) - math.log(60))))
     if basis == "allowable":
@@ -531,11 +555,18 @@ def design_from_unit(u, basis):
     else:
         mult = 0.6 + u[2] * (4.0 - 0.6)
     q = 15 + u[3] * (100 - 15)
-    return dict(D=D, R=R, mult=float(mult), q=float(q))
+    d = dict(D=D, R=R, mult=float(mult), q=float(q))
+    if creep:
+        d["cs"] = float(5 + u[4] * (60 - 5))        # creep flow at the start and at the end of travel, gpm (a value above the flow limit means no creep)
+        d["ce"] = float(5 + u[5] * (60 - 5))
+    return d
 
 
 def tool_from(d, basis, acc=0.0, base=Tool2()):
-    return replace(base, D_cc=d["D"], ratio=d["R"], relief_basis=basis, relief_mult=d["mult"], q_limit_gpm=d["q"], reserve_rule="adaptive", accumulator=acc)
+    t = replace(base, D_cc=d["D"], ratio=d["R"], relief_basis=basis, relief_mult=d["mult"], q_limit_gpm=d["q"], reserve_rule="adaptive", accumulator=acc)
+    if "cs" in d:
+        t = replace(t, creep_start_gpm=d["cs"] if d["cs"] < d["q"] else 0.0, creep_end_gpm=d["ce"] if d["ce"] < d["q"] else 0.0)
+    return t
 
 
 def objectives(r):
@@ -557,7 +588,8 @@ def pareto_mask(F):
     return keep
 
 
-FAMILIES = (("allowable", 0.0), ("median", 0.0), ("allowable", 0.75), ("median", 0.75))
+FAMILIES = (("allowable", 0.0, False), ("median", 0.0, False), ("allowable", 0.75, False), ("median", 0.75, False),
+            ("allowable", 0.0, True), ("allowable", 0.75, True), ("median", 0.0, True), ("median", 0.75, True))
 
 
 def study_optimize(S_opt, n_designs=1500, seed=5, ot_limit=0.01, families=FAMILIES):
@@ -565,17 +597,19 @@ def study_optimize(S_opt, n_designs=1500, seed=5, ot_limit=0.01, families=FAMILI
     (success without over-torque, over-torque probability, water per stroke); best design under P(over-torque) <= ot_limit."""
     rng = np.random.default_rng(seed)
     out = {}
-    for basis, acc in families:
-        U = lhs(n_designs, 4, rng)
+    for fam in families:
+        basis, acc = fam[0], fam[1]
+        creep = len(fam) > 2 and fam[2]
+        U = lhs(n_designs, 6 if creep else 4, rng)
         rows = []
         for u in U:
-            d = design_from_unit(u, basis)
+            d = design_from_unit(u, basis, creep)
             rows.append(dict(d, **objectives(evaluate(tool_from(d, basis, acc), S_opt))))
         F = np.array([[-r["safe"], r["overtorque"], r["volume"]] for r in rows])
         pm = pareto_mask(F)
         feas = [r for r in rows if r["overtorque"] <= ot_limit]
         best = max(feas, key=lambda r: r["safe"]) if feas else None
-        out["%s|%g" % (basis, acc)] = dict(basis=basis, acc=acc, designs=rows, pareto=[i for i in range(len(rows)) if pm[i]], best_feasible=best, n_feasible=len(feas))
+        out["%s|%g%s" % (basis, acc, "|creep" if creep else "")] = dict(basis=basis, acc=acc, creep=creep, designs=rows, pareto=[i for i in range(len(rows)) if pm[i]], best_feasible=best, n_feasible=len(feas))
     return out
 
 
@@ -608,7 +642,7 @@ def study_robust_select(family, n, seed, top=150, limits=(0.02, 0.03, 0.05, 0.10
 def study_hetero(n, seed, designs=1000):
     """Chart basis when the stem strength differs between valve classes: designs optimised on draws with HET_ALLOW, per-class over-torque of the best designs."""
     S = sample_inputs("mix", n, seed, heterogeneous=True)
-    fam = study_optimize(S, designs, seed + 1, families=(("allowable", 0.75), ("median", 0.75)))
+    fam = study_optimize(S, designs, seed + 1, families=(("allowable", 0.75, False), ("median", 0.75, False), ("allowable", 0.75, True), ("median", 0.75, True)))
     out = {}
     for k, v in fam.items():
         bf = v["best_feasible"]
@@ -636,6 +670,20 @@ def study_class_specific(n, seed, designs=500, acc=0.75, ot_limit=0.01):
         feas = [r for r in rows if r["overtorque"] <= ot_limit]
         out[name] = max(feas, key=lambda r: r["safe"]) if feas else None
     return out
+
+
+def study_creep(tool, S):
+    """Slow flow at the start and at the end of travel, baseline tool: effect on over-torque, damage, safe stroke, stroke time and water."""
+    rows = []
+    cases = [(0, 0, 1, 2), (0, 40, 1, 2), (0, 20, 1, 2), (0, 10, 1, 2), (20, 0, 1, 2), (10, 0, 1, 2), (20, 20, 1, 2), (10, 10, 1, 2), (10, 10, 0.5, 1), (10, 10, 2, 4), (10, 10, 4, 8)]
+    for acc in (0.0, 0.75):
+        for cs, ce, ns, ne in cases:
+            t = replace(tool, accumulator=acc, creep_start_gpm=float(cs), creep_end_gpm=float(ce), creep_turns_start=ns, creep_turns_end=ne)
+            r = evaluate(t, S); ok = r["success"]
+            rows.append(dict(acc=acc, cs=cs, ce=ce, ns=ns, ne=ne, success=float(ok.mean()), safe=float(r["success_safe"].mean()), overtorque=float(r["overtorque"].mean()),
+                             damage=float(r["damage"].mean()), time_ok=float(r["time_ok"].mean()), t_med=float(np.median(r["t_min"][ok])) if ok.any() else None,
+                             volume=float(np.nanmedian(r["volume_L"][ok])) if ok.any() else None))
+    return rows
 
 
 def study_reserve(tool, n, seed, mults=(0.1, 0.25, 0.5, 1.0, 2.0)):
@@ -701,11 +749,12 @@ def reproduce_paper(outdir="results", n=200_000, n_sweep=60_000, n_opt=15_000, d
     # optimization
     So = sample_inputs("mix", n_opt, seed + 2)
     opt = study_optimize(So, designs, seed + 3)
-    res["optimization"] = {k: dict(basis=v["basis"], acc=v["acc"], n_feasible=v["n_feasible"], pareto=v["pareto"], best_feasible=v["best_feasible"], designs=v["designs"])
+    res["optimization"] = {k: dict(basis=v["basis"], acc=v["acc"], creep=v["creep"], n_feasible=v["n_feasible"], pareto=v["pareto"], best_feasible=v["best_feasible"], designs=v["designs"])
                            for k, v in opt.items()}
     print("optimization ok", round(time.time() - t0))
     res["class_specific"] = study_class_specific(n_opt, seed + 5)
     res["reserve"] = study_reserve(tool, n_sweep, seed)
+    res["creep"] = study_creep(tool, Ssw)
     rob = {k: study_robust_select(v, n_opt // 2, seed + 6) for k, v in opt.items() if k.startswith("allowable")}
     res["robust_select"] = {k: dict(picks=v["picks"], n_candidates=len(v["candidates"]), candidates=v["candidates"]) for k, v in rob.items()}
     res["hetero"] = study_hetero(n_opt, seed + 7)
