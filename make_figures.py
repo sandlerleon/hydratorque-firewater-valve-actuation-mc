@@ -98,7 +98,7 @@ def fig_capability():
     b.hist(ratio, np.logspace(-1, 0.8, 70), color=PU, alpha=.8)
     b.axvline(1, color="k", ls=":"); b.set_xscale("log"); b.set_xlabel("peak stall torque / allowable stem torque"); b.set_ylabel("count"); b.set_title("(b) end-of-travel stall, baseline tool", fontsize=9)
     b.text(1.05, b.get_ylim()[1] * 0.8, "%.1f%% above 1" % (100 * (ratio > 1).mean()), fontsize=8)
-    save(fig, "Fig3_capability.png")
+    save(fig, "Fig4_capability.png")
 
 
 # ---- Fig 4 relief
@@ -119,7 +119,7 @@ def fig_relief():
     b.bar(x + w, [100 * acc[k]["damage"] for k in ks], w, color=PU, label="stem damage")
     b.set_xticks(x); b.set_xticklabels(["%g" % float(k) for k in ks]); b.set_xlabel("fraction of the stall surge absorbed by an accumulator"); b.set_ylabel("probability (%)")
     b.set_title("(b) hose-side accumulator", fontsize=9); b.legend(frameon=False, fontsize=7)
-    save(fig, "Fig4_relief_accumulator.png")
+    save(fig, "Fig5_relief_accumulator.png")
 
 
 # ---- Fig 5 design space
@@ -132,7 +132,7 @@ def fig_grid():
             for j in range(M.shape[1]):
                 a.text(j, i, "%.0f" % M[i, j], ha="center", va="center", fontsize=7.5, color="w" if (M[i, j] < M.mean()) == (key == "safe") else "k")
         a.set_xlabel("gear ratio"); a.set_ylabel("motor displacement (cc/rev)"); a.set_title(title, fontsize=9); fig.colorbar(im, ax=a, shrink=.8)
-    save(fig, "Fig6_design_space.png")
+    save(fig, "Fig7_design_space.png")
 
 
 # ---- Fig 6 Pareto
@@ -162,7 +162,7 @@ def fig_pareto():
     sc = ax[1].scatter([100 * x["overtorque"] for x in d], [x["volume"] for x in d], c=[100 * x["safe"] for x in d], s=6, cmap="viridis")
     ax[1].set_xlim(0, 25); ax[1].set_ylim(0, 3500); ax[1].set_xlabel("over-torque probability (%)"); ax[1].set_ylabel("median water per stroke (L)")
     ax[1].set_title("(b) water per stroke (accumulator 0.75, allowable basis)", fontsize=9); fig.colorbar(sc, ax=ax[1], label="success without over-torque (%)")
-    save(fig, "Fig8_pareto.png")
+    save(fig, "Fig9_pareto.png")
 
 
 # ---- Fig 7 robustness
@@ -180,7 +180,7 @@ def fig_robust():
         ax[1].bar(xs, [100 * Rb[n]["scenarios"][s_]["overtorque"] for s_ in sc], w, color=cols[i % 6])
     ax[0].set_ylabel("success without\nover-torque (%)"); ax[1].set_ylabel("over-torque\nprobability (%)"); ax[1].axhline(1, color="k", ls=":")
     ax[1].set_xticks(x); ax[1].set_xticklabels(sc, rotation=25, ha="right", fontsize=7.5); ax[0].set_ylim(0, 88); ax[0].legend(frameon=False, fontsize=6.3, ncol=2)
-    save(fig, "Fig9_robustness.png")
+    save(fig, "Fig10_robustness.png")
 
 
 # ---- Fig 8 flow limiter and reserve
@@ -198,7 +198,7 @@ def fig_flow():
     c.semilogx([r["mult"] for r in Rv], [100 * r["safe"] for r in Rv], "-s", ms=3.5, color=BL, label="success w/o over-torque, no rule")
     c.semilogx([r["mult"] for r in Rv], [100 * r["safe_adaptive"] for r in Rv], "-^", ms=3.5, color=GR, label="success w/o over-torque, adaptive rule")
     c.set_xlabel("spare flow (multiple of prior)"); c.set_ylabel("probability (%)"); c.set_title("(c) firefighting reserve", fontsize=9); c.legend(frameon=False, fontsize=6.3)
-    save(fig, "Fig7_flow_reserve.png")
+    save(fig, "Fig8_flow_reserve.png")
 
 
 # ---- Fig 9 sensitivity
@@ -211,7 +211,7 @@ def fig_sens():
     for a, key, title in ((ax[0], "prcc_margin", "(a) torque margin ln(T_cap/T_break)"), (ax[1], "prcc_peak_ratio", "(b) peak ratio ln(T_peak/T_allow)")):
         d = s[key]; ks = sorted(d, key=lambda k: abs(d[k]))[-12:]; a.barh([nice.get(k, k) for k in ks], [d[k] for k in ks], color=[BL if d[k] > 0 else OR for k in ks])
         a.set_xlabel("partial rank correlation"); a.set_title(title, fontsize=9); a.tick_params(axis="y", labelsize=7)
-    save(fig, "Fig11_sensitivity.png")
+    save(fig, "Fig13_sensitivity.png")
 
 
 # ---- Fig 10 time and water
@@ -223,7 +223,7 @@ def fig_time():
     ax[0].axvline(15, color="k", ls=":"); ax[0].set_xlim(0, 25); ax[0].set_xlabel("operating time to stroke (min)"); ax[0].set_ylabel("cumulative success (%)"); ax[0].legend(frameon=False, fontsize=6.5)
     ax[0].set_title("(a) stroking time", fontsize=9)
     ax[1].hist(r["volume_L"][ok], 60, color=BL, alpha=.8); ax[1].set_xlabel("water used in one stroke (L)"); ax[1].set_ylabel("count"); ax[1].set_title("(b) water per successful stroke, baseline", fontsize=9)
-    save(fig, "Fig12_time_water.png")
+    save(fig, "Fig14_time_water.png")
 
 
 # ---- Fig 11 benchmarks
@@ -232,7 +232,7 @@ def fig_bench():
     ax.bar(x - w / 2, [100 * B[n]["success"] for n in names], w, color=BL, label="success")
     ax.bar(x + w / 2, [100 * B[n]["safe"] for n in names], w, color=GR, label="success without over-torque")
     ax.set_xticks(x); ax.set_xticklabels([n.replace(", ", ",\n").replace(" (", "\n(") for n in names], fontsize=6.5); ax.set_ylabel("probability (%)"); ax.legend(frameon=False, fontsize=7)
-    save(fig, "Fig13_benchmarks.png")
+    save(fig, "Fig15_benchmarks.png")
 
 
 def fig_surge_het():
@@ -246,7 +246,7 @@ def fig_surge_het():
             b.bar(x + (i - 0.5) * w, [100 * Hh[k]["per_class"][n_]["overtorque"] for n_ in names], w, color=c, label=lab)
     b.axhline(1, color="k", ls=":"); b.set_xticks(x); b.set_xticklabels(names, rotation=20, ha="right", fontsize=7); b.set_ylabel("over-torque probability (%)")
     b.set_title("(b) stem strength differs between classes", fontsize=9); b.legend(frameon=False, fontsize=6.5)
-    save(fig, "Fig10_surge_hetero.png")
+    save(fig, "Fig12_surge_hetero.png")
 
 
 def fig_creep():
@@ -271,7 +271,44 @@ def fig_creep():
     c_.bar(x - w / 2, [pick(0.0, v[0], v[1], v[2], v[3])["t_med"] for v in variants], w, color=BL, label="median stroking time (min)")
     c_.bar(x + w / 2, [100 * pick(0.0, v[0], v[1], v[2], v[3])["time_ok"] / 10 for v in variants], w, color=OR, label="in time (% / 10)")
     c_.set_xticks(x); c_.set_xticklabels([v[4] for v in variants], rotation=20, ha="right", fontsize=7); c_.set_title("(c) time cost of the slow phases", fontsize=9); c_.legend(frameon=False, fontsize=6.5)
-    save(fig, "Fig5_creep.png")
+    save(fig, "Fig6_creep.png")
+
+
+def fig_moc():
+    M = R["moc"]; fig, ax = plt.subplots(1, 3, figsize=(10.2, 3.3))
+    a = ax[0]; cl = M["classical"]; x = np.arange(len(cl))
+    a.bar(x - 0.2, [c["classical"] for c in cl], 0.4, color=GY, label="classical (Joukowsky, Michaud, factor of Eq. 6)")
+    a.bar(x + 0.2, [c["moc"] for c in cl], 0.4, color=BL, label="transient simulation")
+    a.set_xticks(x); a.set_xticklabels(["a=%d" % c["a"] if c["kind"] == "instantaneous" else "tc=%g" % c["tc"] for c in cl], rotation=60, fontsize=6.5)
+    a.set_ylabel("surge at the motor end (psi)"); a.set_title("(a) classical limits", fontsize=9); a.legend(frameon=False, fontsize=6)
+    b = ax[1]; pts = np.array(M["compare"]["points"])
+    b.loglog(pts[:, 0], pts[:, 1], ".", ms=4, color=BL, alpha=.6)
+    lim = [pts.min() * 0.9, pts.max() * 1.1]; b.plot(lim, lim, "k:", lw=1)
+    from matplotlib.ticker import NullFormatter
+    b.xaxis.set_minor_formatter(NullFormatter()); b.yaxis.set_minor_formatter(NullFormatter())
+    b.set_xlabel("transient simulation, peak pressure (psi)"); b.set_ylabel("screening model, peak pressure (psi)")
+    b.set_title("(b) model above simulation in %.0f%% of cases" % (100 * M["compare"]["model_ge_moc"]), fontsize=9)
+    c = ax[2]; sw = M["relief_response"]; xs = [r["t_r"] for r in sw]
+    c.semilogx(xs, [r["median"] for r in sw], "-o", ms=4, color=BL, label="median")
+    c.semilogx(xs, [r["p95"] for r in sw], "-s", ms=4, color=OR, label="95th percentile")
+    c.axhline(0.3, color="k", ls=":"); c.text(xs[0], 0.32, "upper bound of the prior", fontsize=7)
+    c.set_xlabel("relief valve response time (s)"); c.set_ylabel("unrelieved fraction of the surge"); c.set_title("(c) the prior of the unrelieved fraction", fontsize=9); c.legend(frameon=False, fontsize=7, loc="upper left")
+    save(fig, "Fig3_moc.png")
+
+
+def fig_stem():
+    S = R["stem"]; fig, ax = plt.subplots(1, 2, figsize=(8.4, 3.4))
+    a = ax[0]
+    for (name, rows), c in zip(S["curves"].items(), (RD, PU, BL, GR)):
+        a.plot([r["f"] for r in rows], [max(100 * r["overtorque"], 0.01) for r in rows], "-o", ms=3.5, color=c, label=name)
+    a.axhline(1, color="k", ls=":"); a.set_yscale("log"); a.set_xlabel("true stem strength / data-sheet value"); a.set_ylabel("over-torque probability (%)")
+    a.set_title("(a) a weaker stem than the data sheet says", fontsize=9); a.legend(frameon=False, fontsize=6.3)
+    b = ax[1]; d = S["derating"]
+    b.plot([r["f"] for r in d], [100 * r["safe"] for r in d], "-o", ms=4, color=GR, label="safe stroke at P(over-torque) = 1%")
+    b.set_xlabel("weakest stem strength that must be tolerated / data-sheet value"); b.set_ylabel("probability of a safe stroke (%)"); b.invert_xaxis()
+    b2 = b.twinx(); b2.plot([r["f"] for r in d], [r["mult"] for r in d], "--s", ms=3.5, color=OR); b2.set_ylabel("relief chart (multiple of allowable torque)", color=OR)
+    b.set_title("(b) the price of not knowing the stem", fontsize=9); b.legend(frameon=False, fontsize=7, loc="lower left")
+    save(fig, "Fig11_stem_strength.png")
 
 
 def fig_convergence():
@@ -288,5 +325,5 @@ def fig_kit():
 
 
 if __name__ == "__main__":
-    for f in (fig_arch, fig_verify, fig_capability, fig_relief, fig_grid, fig_pareto, fig_robust, fig_flow, fig_sens, fig_time, fig_bench, fig_surge_het, fig_creep, fig_convergence, fig_kit):
+    for f in (fig_arch, fig_verify, fig_capability, fig_relief, fig_grid, fig_pareto, fig_robust, fig_flow, fig_sens, fig_time, fig_bench, fig_surge_het, fig_creep, fig_moc, fig_stem, fig_convergence, fig_kit):
         f(); print(f.__name__, "ok")

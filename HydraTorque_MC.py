@@ -37,7 +37,7 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
 PSI = 6894.757            # Pa per psi
 GPM_LPM = 3.78541         # L/min per gpm
 GPM_M3S = 6.30902e-5      # m3/s per gpm
@@ -813,9 +813,204 @@ def reproduce_paper(outdir="results", n=200_000, n_sweep=60_000, n_opt=15_000, d
     return res, dict(S=S, base=base, opt=opt)
 
 
+# ----------------------------------------------------------------------------- transient check of the surge model (method of characteristics)
+def moc_peak(L, a, d_in, Q0_gpm, p_run_psi, p_up_psi, tc, p_set_psi=None, eps=0.15, t_r=0.05, N=40):
+    """One-dimensional water-hammer simulation of the supply hose by the method of characteristics (frictionless; constant-pressure source behind a linear
+    resistance, the flow limiter; motor end stopped linearly in time tc; relief valve at the motor end that opens linearly over t_r once p >= p_set and passes
+    the running flow at p_set (1 + eps)). Returns the peak pressure at the motor end, psi. It checks the surge relations of the screening model against
+    classical results and against the transient behaviour of the model's own assumptions; it is not an experimental validation."""
+    A = math.pi / 4 * (d_in * INCH) ** 2
+    Z = RHO * a / A
+    Q0 = Q0_gpm * GPM_M3S
+    p0 = p_run_psi * PSI; pup = p_up_psi * PSI
+    Rs = max((pup - p0) / Q0, 0.0)
+    dt = L / (a * N)
+    nsteps = int(6 * L / a / dt) + int(tc / dt) + 5
+    p = np.full(N + 1, p0); q = np.full(N + 1, Q0)
+    s_open = 0.0
+    use_relief = p_set_psi is not None
+    if use_relief:
+        pset = p_set_psi * PSI
+        Kr = Q0 / math.sqrt(pset * (1 + eps))
+    peak = p0
+    for k in range(1, nsteps + 1):
+        t = k * dt
+        pn = p.copy(); qn = q.copy()
+        pn[1:N] = 0.5 * ((p[0:N - 1] + p[2:N + 1]) + Z * (q[0:N - 1] - q[2:N + 1]))
+        qn[1:N] = 0.5 * ((q[0:N - 1] + q[2:N + 1]) + (p[0:N - 1] - p[2:N + 1]) / Z)
+        q0 = (pup - p[1] + Z * q[1]) / (Z + Rs)
+        qn[0] = q0; pn[0] = pup - Rs * q0
+        qm = Q0 * max(0.0, 1.0 - t / tc)
+        B = p[N - 1] + Z * q[N - 1]
+        if use_relief and p[N] >= pset:
+            s_open = min(1.0, s_open + dt / t_r)
+        if use_relief and s_open > 0:
+            c = Z * Kr * s_open
+            y = (-c + math.sqrt(c * c - 4 * (Z * qm - B))) / 2
+            pN = y * y
+        else:
+            pN = B - Z * qm
+        pn[N] = pN; qn[N] = qm + (Kr * s_open * math.sqrt(max(pN, 0)) if use_relief else 0.0)
+        p, q = pn, qn
+        peak = max(peak, p[N])
+    return peak / PSI
+
+
+def joukowsky_rise_psi(L, a, d_in, Q0_gpm, tc):
+    """surge of the screening model: rho a v min(1, 2L/(a tc)), psi"""
+    v = Q0_gpm * GPM_M3S / (math.pi / 4 * (d_in * INCH) ** 2)
+    return RHO * a * v * min(1.0, 2 * L / (a * tc)) / PSI
+
+
+def study_moc(n_cases=300, seed=3):
+    """(i) the solver against the classical Joukowsky and Michaud results; (ii) the peak pressure of the screening model (static supply plus surge, limited by the relief
+    override and the unrelieved fraction kappa) against the transient simulation for random hoses, flows, relief settings and valve response times; (iii) the unrelieved
+    fraction kappa implied by the simulation against the prior of the model (uniform 0 to 0.3) and its dependence on the relief response time."""
+    out = {}
+    d_in, Q0 = 2.5, 60.0
+    cls = []
+    for a_ in (150, 250, 400):
+        cls.append(dict(kind="instantaneous", a=a_, tc=1e-4, L=60.0, classical=joukowsky_rise_psi(60.0, a_, d_in, Q0, 1e-4), moc=moc_peak(60.0, a_, d_in, Q0, 50.0, 50.0, 1e-4) - 50.0))
+    for tc in (0.8, 1.2, 2.0, 4.0):
+        v = Q0 * GPM_M3S / (math.pi / 4 * (d_in * INCH) ** 2)
+        cls.append(dict(kind="slow (Michaud)", a=300.0, tc=tc, L=60.0, classical=2 * RHO * 60.0 * v / tc / PSI, moc=moc_peak(60.0, 300.0, d_in, Q0, 50.0, 50.0, tc) - 50.0))
+    for tc in (0.05, 0.2):
+        cls.append(dict(kind="short (reduction factor)", a=300.0, tc=tc, L=60.0, classical=joukowsky_rise_psi(60.0, 300.0, d_in, Q0, tc), moc=moc_peak(60.0, 300.0, d_in, Q0, 50.0, 50.0, tc) - 50.0))
+    out["classical"] = cls
+    rng = np.random.default_rng(seed)
+    rows = []
+    for i in range(n_cases):
+        L = rng.uniform(15, 120); a_ = rng.uniform(150, 400); tc = rng.uniform(0.05, 0.5); tr = rng.uniform(0.01, 0.1); eps = rng.uniform(0.05, 0.25)
+        din = float(rng.choice([1.75, 2.5, 3.0])); q0 = rng.uniform(15, 100); p_run = rng.uniform(10, 80); p_set = p_run * rng.uniform(1.2, 4.0); p_up = p_set * rng.uniform(1.1, 3.0)
+        dJ = joukowsky_rise_psi(L, a_, din, q0, tc)
+        pk = moc_peak(L, a_, din, q0, p_run, p_up, tc, p_set, eps, tr)
+        kap = rng.uniform(0, 0.3)
+        model = min(p_up + dJ, p_set * (1 + eps) + kap * dJ)
+        rows.append(dict(moc=pk, model=model, kappa_eff=(pk - p_set * (1 + eps)) / dJ, dJ=dJ, override=p_set * (1 + eps), t_r=tr))
+    K = np.array([r["kappa_eff"] for r in rows])
+    out["compare"] = dict(n=n_cases, model_ge_moc=float(np.mean([r["model"] >= r["moc"] for r in rows])), median_ratio=float(np.median([r["model"] / r["moc"] for r in rows])),
+                          kappa_q=[float(x) for x in np.percentile(K, [5, 50, 95, 99])], share_kappa_above_prior=float((K > 0.3).mean()), points=[(r["moc"], r["model"]) for r in rows[:150]])
+    sweep = []
+    for tr in (0.01, 0.03, 0.1, 0.3, 1.0):
+        ks = []
+        for i in range(120):
+            L = rng.uniform(15, 120); a_ = rng.uniform(150, 400); tc = rng.uniform(0.05, 0.5); eps = rng.uniform(0.05, 0.25)
+            din = float(rng.choice([1.75, 2.5, 3.0])); q0 = rng.uniform(15, 100); p_run = rng.uniform(10, 80); p_set = p_run * rng.uniform(1.2, 4.0); p_up = p_set * rng.uniform(1.1, 3.0)
+            dJ = joukowsky_rise_psi(L, a_, din, q0, tc)
+            ks.append((moc_peak(L, a_, din, q0, p_run, p_up, tc, p_set, eps, tr) - p_set * (1 + eps)) / dJ)
+        ks = np.array(ks)
+        sweep.append(dict(t_r=tr, median=float(np.median(ks)), p95=float(np.percentile(ks, 95)), share_above_prior=float((ks > 0.3).mean())))
+    out["relief_response"] = sweep
+    return out
+
+
+# ----------------------------------------------------------------------------- stem strength, confidence limits and preliminary mechanical loads
+def _tool_of(row, basis, acc):
+    return tool_from(row, basis, acc)
+
+
+def study_stem(res, n=60_000, seed=21):
+    """Over-torque probability against the true stem strength (relative to the data sheet) for four tools, and the relief derating that keeps P(over-torque) <= 1% when the
+    stem may be weaker by a given factor, with the safe-stroke probability that remains."""
+    opt = res["optimization"]
+    tools = {"baseline": Tool2(), "baseline + accumulator 0.75": replace(Tool2(), accumulator=0.75)}
+    for k in ("allowable|0.75", "allowable|0.75|creep"):
+        bf = opt[k]["best_feasible"]
+        tools["optimized " + k] = tool_from(bf, "allowable", 0.75)
+    factors = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5]
+    curves = {}
+    for name, t in tools.items():
+        row = []
+        for f in factors:
+            r = evaluate(t, sample_inputs("mix", n, seed, shift=dict(allow_mult=f)))
+            row.append(dict(f=f, overtorque=float(r["overtorque"].mean()), safe=float(r["success_safe"].mean())))
+        curves[name] = row
+    base_t = tools["optimized allowable|0.75|creep"]
+    der = []
+    for f in (1.0, 0.9, 0.8, 0.7, 0.6, 0.5):
+        S = sample_inputs("mix", n, seed, shift=dict(allow_mult=f))
+        lo, hi = 0.05, 1.5
+        for _ in range(14):
+            mid = 0.5 * (lo + hi)
+            ot = evaluate(replace(base_t, relief_mult=base_t.relief_mult * mid), S)["overtorque"].mean()
+            lo, hi = (mid, hi) if ot <= 0.01 else (lo, mid)
+        r = evaluate(replace(base_t, relief_mult=base_t.relief_mult * lo), S)
+        der.append(dict(f=f, scale=lo, mult=base_t.relief_mult * lo, safe=float(r["success_safe"].mean()), overtorque=float(r["overtorque"].mean())))
+    return dict(curves=curves, derating=der, tool=dict(D=base_t.D_cc, R=base_t.ratio, mult=base_t.relief_mult, q=base_t.q_limit_gpm))
+
+
+def study_ci(res, n_opt=None):
+    """Wilson 95% limits of the over-torque probability of every chosen design on the independent draws, and the best design chosen so that the
+    upper limit of the in-sample estimate is at most 1% (a strict compliance rule)."""
+    n_opt = n_opt or res["meta"]["n_opt"]; n_oos = res["meta"]["n"]
+    out = dict(designs={}, strict={})
+    for name, v in res["robust"].items():
+        p_ = v["out_of_sample"]["overtorque"]; k = int(round(p_ * n_oos)); lo, hi = wilson(k, n_oos)
+        out["designs"][name] = dict(p=p_, lo=lo, hi=hi, n=n_oos)
+    for fam, v in res["optimization"].items():
+        feas = [r for r in v["designs"] if wilson(int(round(r["overtorque"] * n_opt)), n_opt)[1] <= 0.01]
+        if not feas:
+            out["strict"][fam] = None
+            continue
+        best = max(feas, key=lambda r: r["safe"])
+        t = tool_from(best, v["basis"], v["acc"])
+        r = evaluate(t, sample_inputs("mix", n_oos, res["meta"]["seed"] + 4))
+        k = int(r["overtorque"].sum()); lo, hi = wilson(k, n_oos)
+        out["strict"][fam] = dict(design=best, n_feasible=len(feas), safe=float(r["success_safe"].mean()), overtorque=float(r["overtorque"].mean()), lo=lo, hi=hi,
+                                  in_sample_safe=best["safe"], in_sample_ot=best["overtorque"])
+    return out
+
+
+def study_mech(res, n=100_000, seed=33, arm_m=0.6, sf=2.0, sigma_y_mpa=355.0):
+    """Preliminary mechanical loads of the baseline tool and two optimized tools: peak stall torque, gearbox rating, reaction force and arm section modulus,
+    motor speed and power, hose velocity and the gas volume of an accumulator that absorbs the surge energy. Screening estimates for the draws of the model,
+    not a design."""
+    opt = res["optimization"]
+    tools = {"baseline": Tool2()}
+    for k in ("allowable|0", "allowable|0.75|creep"):
+        tools["optimized " + k] = tool_from(opt[k]["best_feasible"], "allowable", 0.75 if "0.75" in k else 0.0)
+    out = {}
+    S = sample_inputs("mix", n, seed)
+    for name, t in tools.items():
+        r = evaluate(t, S)
+        Tp = r["T_peak"]
+        Tq = lambda q_: float(np.percentile(Tp, q_))
+        v = r["Q_run"] * GPM_M3S / (math.pi / 4 * (S["hose_in"] * INCH) ** 2)
+        chi = t.accumulator if t.accumulator > 0 else 0.75
+        E = 0.5 * RHO * (math.pi / 4 * (S["hose_in"] * INCH) ** 2) * (S["L"] * FT) * v ** 2          # kinetic energy of the water column in the hose, J
+        p2 = np.maximum(r["inputs"]["Ps"] * 0 + (t.relief_mult * (S["am"] * S["med"] if t.relief_basis == "allowable" else S["med"]) / (t.D_cc * 1e-6 / (2 * math.pi) * t.eta_m[0] * t.ratio * t.eta_g[0])) * 1.15, 1.0)
+        p1 = np.maximum(0.9 * r["dP_req"] * PSI, 0.2e5)
+        ok = p2 > 1.05 * p1
+        Vg = np.where(ok, chi * E / (p1 * np.log(np.where(ok, p2 / p1, 2.0))), np.nan) * 1e3             # litres of gas at precharge (isothermal)
+        n_motor = r["Q_run"] * GPM_LPM * 1000.0 / t.D_cc                                              # motor rpm at the running flow
+        P_motor = r["dP_req"] * PSI * r["Q_run"] * GPM_M3S / 1e3                                      # hydraulic power at the motor, kW
+        out[name] = dict(tool=dict(D=t.D_cc, R=t.ratio, mult=t.relief_mult, q=t.q_limit_gpm, acc=t.accumulator, cs=t.creep_start_gpm, ce=t.creep_end_gpm),
+                         T_peak_p50=Tq(50), T_peak_p99=Tq(99), T_peak_p999=Tq(99.9), gearbox_rating_Nm=1.5 * Tq(99.9),
+                         reaction_kN_p99=Tq(99) / arm_m / 1e3, arm_Z_cm3_p99=Tq(99) * sf / (sigma_y_mpa * 1e6) * 1e6, arm_m=arm_m, sf=sf, sigma_y_mpa=sigma_y_mpa,
+                         motor_rpm_p50=float(np.median(n_motor)), motor_rpm_p95=float(np.percentile(n_motor, 95)), motor_kW_p50=float(np.median(P_motor)), motor_kW_p95=float(np.percentile(P_motor, 95)),
+                         hose_v_p50=float(np.median(v)), hose_v_p95=float(np.percentile(v, 95)), hose_E_p95=float(np.percentile(E, 95)),
+                         accumulator_gas_L_p50=float(np.nanmedian(Vg)), accumulator_gas_L_p95=float(np.nanpercentile(Vg, 95)), accumulator_gas_L_p99=float(np.nanpercentile(Vg, 99)))
+    return out
+
+
+def run_extras(outdir="results"):
+    """Adds the transient check, the stem-strength study, the confidence limits and the mechanical loads to results.json without repeating the main study."""
+    path = os.path.join(outdir, "results.json")
+    res = json.load(open(path))
+    t0 = time.time()
+    res["moc"] = study_moc(); print("moc ok", round(time.time() - t0))
+    res["stem"] = study_stem(res); print("stem ok", round(time.time() - t0))
+    res["ci"] = study_ci(res); print("ci ok", round(time.time() - t0))
+    res["mech"] = study_mech(res); print("mech ok", round(time.time() - t0))
+    with open(path, "w") as fh:
+        json.dump(res, fh, indent=1, default=float)
+    return res
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--demo", action="store_true"); ap.add_argument("--reproduce", action="store_true"); ap.add_argument("--legacy", action="store_true")
+    ap.add_argument("--extras", action="store_true", help="transient check, stem-strength study, confidence limits and mechanical loads (adds to results.json)")
     ap.add_argument("--n", type=int, default=200_000); ap.add_argument("--seed", type=int, default=2026)
     ap.add_argument("--outdir", default="results")
     a = ap.parse_args()
@@ -829,7 +1024,9 @@ def main():
         m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
         m.reproduce_paper(a.outdir, n=a.n, seed=a.seed); print("done ->", a.outdir); return
     if a.reproduce:
-        reproduce_paper(a.outdir, n=a.n, seed=a.seed); print("done ->", a.outdir); return
+        reproduce_paper(a.outdir, n=a.n, seed=a.seed); run_extras(a.outdir); print("done ->", a.outdir); return
+    if a.extras:
+        run_extras(a.outdir); print("done ->", a.outdir); return
     ap.print_help()
 
 

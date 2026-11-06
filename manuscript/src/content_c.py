@@ -54,10 +54,9 @@ add(("p", "The six added mechanisms do not change the result equally (Table @T:l
 rows = [[r["step"].replace("version 1 physics", "v1 physics").replace("_", " "), pc(r["success"], 1), pc(r["success_safe"], 1), pc(r["overtorque"], 1), pc(r["damage"], 2), pc(r["interference"], 1)] for r in LAD]
 add(("table", "Table @T:ladder@. Switching the model-2 mechanisms on one at a time, in order, on the same %s draws (baseline tool, valve-class mix)." % n(M["n_sweep"]),
      ["Step", "Success", "Safe stroke", "Over-torque", "Stem damage", "Interference (v1 metric)"], rows, [2.2, 0.9, 1.0, 1.0, 1.0, 1.4], 16))
-add(("fig", "Fig2_verification.png", "Fig. @F:verify@. Verification and mechanism ladder. (a) Breakaway probability against the supply pressure at the tool: closed form, Monte Carlo with the same assumptions, "
+add(("fig", "@FILE:verify@", "Fig. @F:verify@. Verification and mechanism ladder. (a) Breakaway probability against the supply pressure at the tool: closed form, Monte Carlo with the same assumptions, "
             "and the full model. (b) Success, success without over-torque and over-torque probability as the mechanisms of model 2 are switched on in order (v1: the concept-stage physics).", 6.6))
-add(("p", "The concept-stage study stated that the tool draws 50 to 100 L/min (13 to 26 gpm), and its simulation used a 60 gpm (227 L/min) flow limiter. The two numbers describe different "
-          "things, and the difference matters for the water budget. The 13 to 26 gpm is the flow that a 200 cc motor needs at an output speed of 1 to 2 rpm. Valves that need 30 to 70 handwheel "
+add(("p", "The concept-stage study stated that the tool draws 50 to 100 L/min (13 to 26 gpm), and its simulation used a 60 gpm (227 L/min) flow limiter. The 13 to 26 gpm is the flow that a 200 cc motor needs at an output speed of 1 to 2 rpm. Valves that need 30 to 70 handwheel "
           "turns cannot be stroked in 15 minutes at that speed: the median output speed of a successful stroke in the simulation is %s rpm. The operating flow is therefore the limiter setting, %s gpm "
           "(%s L/min), in most draws, and a successful stroke uses a median of %s L of water (90th percentile %s L; Fig. @F:time@b). A limit of 20 gpm completes the stroke within 15 minutes in only %s of the draws, "
           "and 40 gpm in %s (Fig. @F:flow@a)."
@@ -87,9 +86,9 @@ add(("p", "The surge on stall is the largest single source of over-torque in the
              pc(R["surge_study"]["baseline + accumulator 0.75"][4]["overtorque"], 0), pc(R["surge_study"]["optimized allowable|0.75"][4]["overtorque"], 1))))
 ssu = R["surge_study"]
 ast(all(r["overtorque"] <= rr["overtorque"] + 1e-9 for rr, r in zip(ssu["baseline"], ssu["baseline + accumulator 0.75"])), "accumulator never raises over-torque")
-add(("fig", "Fig3_capability.png", "Fig. @F:cap@. (a) Distributions of the valve breakaway demand, the stall capability of the baseline tool (limited by the relief valve) and the allowable stem torque over the draws. "
+add(("fig", "@FILE:cap@", "Fig. @F:cap@. (a) Distributions of the valve breakaway demand, the stall capability of the baseline tool (limited by the relief valve) and the allowable stem torque over the draws. "
             "(b) Ratio of the peak stall torque to the allowable stem torque; the dotted line marks the exceedance.", 6.6))
-add(("fig", "Fig4_relief_accumulator.png", "Fig. @F:relief@. (a) Probability of a safe stroke against the probability of over-torque as the relief setting is varied (labels: multiple of the median breakaway "
+add(("fig", "@FILE:relief@", "Fig. @F:relief@. (a) Probability of a safe stroke against the probability of over-torque as the relief setting is varied (labels: multiple of the median breakaway "
             "torque, or fraction of the nominal allowable stem torque), for the two chart bases and without a relief valve. (b) Effect of a hose-side accumulator on the safe stroke, the over-torque and "
             "the stem damage.", 6.6))
 
@@ -104,10 +103,9 @@ def cr(acc, cs, ce, ns=1, ne=2):
 
 c00, c020, c010, c1010, c2010, c100 = cr(0.0, 0, 0), cr(0.0, 0, 20), cr(0.0, 0, 10), cr(0.0, 10, 10), cr(0.0, 20, 0), cr(0.0, 10, 0)
 a00, a020 = cr(0.75, 0, 0), cr(0.75, 0, 20)
-add(("p", "A tool whose flow can be turned down is a natural remedy for the surge, because the surge is proportional to the velocity of the water that the stall has to stop. Two creep phases are evaluated for "
-          "the baseline tool: a slow flow for the first turns of the stroke, which builds the torque gradually against a stuck valve, and a slow flow for the last turns before the end of travel, which brings the "
-          "tool to the stop slowly. In the model the creep at the end lowers the flow before the stall, and the creep at the start lowers it for the valves that stall at the start because they do not break free; both "
-          "cost time, because the slow turns take longer, and a stroke that no longer finishes in 15 minutes is a failure. The transient of opening the supply is not modeled; the slow-opening shut-off is assumed to remove it."))
+add(("p", "A tool whose flow can be turned down is a natural remedy for the surge, which is proportional to the velocity of the water that the stall has to stop. Two creep phases are evaluated for the baseline tool: a slow flow for the first turns of the stroke, which builds torque gradually "
+          "against a stuck valve, and a slow flow for the last turns, which brings the tool to the stop slowly. In the model the end creep lowers the flow before the stall, and the start creep lowers it for valves that stall at the start because they do not break free; both cost time, and a "
+          "stroke that no longer finishes in 15 minutes is a failure. The opening transient of the supply is not modeled; the slow-opening shut-off is assumed to remove it."))
 rows = []
 for r in CR:
     if r["acc"] == 0.0 or (r["cs"], r["ce"], r["ns"], r["ne"]) in ((0, 0, 1, 2), (0, 20, 1, 2), (10, 10, 1, 2)):
@@ -116,17 +114,14 @@ for r in CR:
 add(("table", "Table @T:creep@. Creep at the start and at the end of travel, baseline tool (200 cc, 250:1, 60 gpm, relief at 2 x median), %s draws: flows (gpm), turns at those flows, safe stroke, over-torque, damage, "
               "success, median time of successful strokes (min) and water (L). First column: accumulator fraction." % n(M["n_sweep"]),
      ["Accum.", "Start", "End", "Turns", "Safe", "Over-torque", "Damage", "Success", "Time", "Water"], rows, [0.7, 0.6, 0.6, 0.8, 0.7, 0.9, 0.8, 0.8, 0.6, 0.7], 14))
-add(("p", "Creep at the end of travel works. Two turns at 20 gpm lower the over-torque probability from %s to %s, the damage probability from %s to %s, and raise the probability of a safe stroke from %s to %s, at the cost of %s minutes of "
-          "median stroking time and %s percentage points of success (the strokes that no longer finish in 15 minutes). A slower approach, 10 gpm, lowers the over-torque probability to %s but costs more: the safe-stroke probability is "
-          "%s and the success %s. Creep at the start alone does little for the over-torque probability (%s at 20 gpm and %s at 10 gpm, against %s) because in this model it matters only for the valves that stall at the start, "
-          "which are already failed strokes; its practical benefit, a shock-free build-up of torque against a stuck valve, is not captured. Combining 10 gpm at both ends lowers the over-torque probability to %s but leaves the safe-stroke "
-          "probability at %s, because the time limit begins to bind (success %s). The length of the slow phases matters as much as their flow (Fig. @F:creep@c): doubling both to two and four turns raises the median time to %s minutes, and "
-          "four and eight turns to %s minutes, and the success falls to %s and %s. With the accumulator the gain of the end creep is smaller (over-torque from %s to %s), because the accumulator has already removed most of the surge: the "
-          "two measures are complementary but the second has diminishing returns."
+add(("p", "Creep at the end of travel works. Two turns at 20 gpm lower the over-torque probability from %s to %s and the damage probability from %s to %s, and raise the probability of a safe stroke from %s to %s, at the cost of %s minutes of median stroking time and %s points of success "
+          "(strokes that no longer finish in 15 minutes). A slower approach, 10 gpm, lowers the over-torque probability to %s but the safe-stroke probability to %s (success %s). Creep at the start alone does little for the over-torque probability (%s at 20 gpm and %s at 10 gpm, against %s) because in this model "
+          "it matters only for valves that do not break free; its practical benefit, a shock-free build-up of torque against a stuck valve, is not captured. The length of the slow phases matters as much as their flow (Fig. @F:creep@c): two and four turns at 10 gpm raise the median time to %s minutes and cut the "
+          "success to %s. With the accumulator the gain of the end creep is smaller (over-torque from %s to %s), so the two measures are complementary with diminishing returns."
           % (pc(c00["overtorque"], 1), pc(c020["overtorque"], 1), pc(c00["damage"], 2), pc(c020["damage"], 2), pc(c00["safe"], 1), pc(c020["safe"], 1), n(c020["t_med"] - c00["t_med"], 1), n(100 * (c00["success"] - c020["success"]), 1),
-             pc(c010["overtorque"], 1), pc(c010["safe"], 1), pc(c010["success"], 1), pc(c2010["overtorque"], 1), pc(c100["overtorque"], 1), pc(c00["overtorque"], 1), pc(c1010["overtorque"], 1), pc(c1010["safe"], 1), pc(c1010["success"], 1),
-             n(cr(0.0, 10, 10, 2, 4)["t_med"], 1), n(cr(0.0, 10, 10, 4, 8)["t_med"], 1), pc(cr(0.0, 10, 10, 2, 4)["success"], 1), pc(cr(0.0, 10, 10, 4, 8)["success"], 1), pc(a00["overtorque"], 1), pc(a020["overtorque"], 1))))
-add(("fig", "Fig5_creep.png", "Fig. @F:creep@. Creep at the start and at the end of travel, baseline tool. (a) Over-torque probability against the flow during the last two turns, without and with an accumulator. "
+             pc(c010["overtorque"], 1), pc(c010["safe"], 1), pc(c010["success"], 1), pc(c2010["overtorque"], 1), pc(c100["overtorque"], 1), pc(c00["overtorque"], 1), n(cr(0.0, 10, 10, 2, 4)["t_med"], 1), pc(cr(0.0, 10, 10, 2, 4)["success"], 1),
+             pc(a00["overtorque"], 1), pc(a020["overtorque"], 1))))
+add(("fig", "@FILE:creep@", "Fig. @F:creep@. Creep at the start and at the end of travel, baseline tool. (a) Over-torque probability against the flow during the last two turns, without and with an accumulator. "
             "(b) Probability of a safe stroke (solid) and of success (dashed). (c) Median stroking time and share of strokes finishing in 15 minutes (divided by 10) for slow phases of different flow and length.", 6.8))
 
 # ---------------------------------------------------------------------------------------------- 6.4
@@ -134,14 +129,10 @@ add(("h2", "@S:grid@ The design space"))
 G = R["grid"]; Ds, Rs = G["D"], G["R"]
 gs = G["safe"]; best_ij = max(((i, j) for i in range(len(Ds)) for j in range(len(Rs))), key=lambda t: gs[t[0]][t[1]])
 worst = min(gs[i][j] for i in range(len(Ds)) for j in range(len(Rs)))
-add(("p", "With the flow limited, the torque scales with $D\\,R$ and the speed falls in the same proportion, so the useful designs lie along a ridge of constant $D\\,R$ (Fig. @F:grid@a): %s%% or more "
-          "of the draws give a safe stroke along the diagonal from 100 cc at 500:1 to 400 cc at 100:1, and the probability falls to %s%% for the largest products. The ridge is not "
-          "the whole story, because the over-torque probability rises with $D\\,R$ (Fig. @F:grid@b, from %s%% to %s%% over the grid): for a given torque chart a larger product means a lower relief "
-          "pressure, and the surge, which is a pressure, becomes a larger fraction of it. Along the ridge the over-torque probability is %s%% at 100 cc and 500:1 and %s%% at 400 cc and 100:1, so the "
-          "larger motor with the lower ratio is somewhat safer at the same success probability."
-          % (n(100 * min(gs[i][4 - i] for i in range(5))), n(100 * worst), n(100 * min(min(r) for r in G["overtorque"])), n(100 * max(max(r) for r in G["overtorque"])),
-             n(100 * G["overtorque"][0][4]), n(100 * G["overtorque"][4][0]))))
-add(("fig", "Fig6_design_space.png", "Fig. @F:grid@. (a) Probability of a safe stroke and (b) probability of over-torque against motor displacement and gear ratio, for the baseline relief chart "
+add(("p", "With the flow limited, the torque scales with $D\\,R$ and the speed falls in the same proportion, so useful designs lie along a ridge of constant $D\\,R$ (Fig. @F:grid@a): %s%% or more of the draws give a safe stroke along the diagonal from 100 cc at 500:1 to 400 cc at 100:1, "
+          "and %s%% for the largest products. The over-torque probability rises with $D\\,R$ (Fig. @F:grid@b, from %s%% to %s%% over the grid) because a larger product means a lower relief pressure, and the surge, which is a pressure, becomes a larger fraction of it."
+          % (n(100 * min(gs[i][4 - i] for i in range(5))), n(100 * worst), n(100 * min(min(r) for r in G["overtorque"])), n(100 * max(max(r) for r in G["overtorque"])))))
+add(("fig", "@FILE:grid@", "Fig. @F:grid@. (a) Probability of a safe stroke and (b) probability of over-torque against motor displacement and gear ratio, for the baseline relief chart "
             "(2 x median) and 60 gpm.", 6.4))
 
 # ---------------------------------------------------------------------------------------------- 6.4
@@ -157,7 +148,7 @@ add(("p", "The concept-stage study found that the tool draws more than a quarter
           "compatible with its firefighting reserve, and the right operating rule is to use a dedicated source for large valves."
           % (pc(q60["interference_v1"], 0), pc(q60["reserve_viol"], 1), pc(q150["reserve_viol"], 1), pc(RV[1]["reserve_viol"], 0), pc(RV[0]["reserve_viol"], 0), pc(RV[1]["safe"], 1),
              pc(RV[1]["safe_adaptive"], 1), pc(RV[0]["safe_adaptive"], 1), pc(RV[0]["time_ok_adaptive"], 0))))
-add(("fig", "Fig7_flow_reserve.png", "Fig. @F:flow@. (a) Probability of a safe stroke and of finishing within 15 minutes against the flow limit. (b) Median water used in a successful stroke against the flow limit. "
+add(("fig", "@FILE:flow@", "Fig. @F:flow@. (a) Probability of a safe stroke and of finishing within 15 minutes against the flow limit. (b) Median water used in a successful stroke against the flow limit. "
             "(c) Probability of violating the firefighting reserve at 60 gpm, and the probability of a safe stroke without and with the adaptive rule, against the spare flow of shared sources (multiple of the prior).", 6.8))
 
 # ---------------------------------------------------------------------------------------------- 6.5
@@ -223,17 +214,33 @@ add(("p", "The 1%% limit is illustrative, and Table @T:limits@ shows how the bes
           % tuple(pc(max(r["safe"] for r in fam["allowable|0.75"]["designs"] if r["overtorque"] <= lim), 1) for lim in lims)))
 add(("table", "Table @T:limits@. Best probability of a safe stroke among the searched designs (in-sample) as the limit on the over-torque probability is varied.",
      ["Family", "P(over-torque) <= 0.5%", "<= 1%", "<= 2%", "<= 5%"], rowsl, [2.6, 1.3, 1.0, 1.0, 1.0], 16))
-add(("fig", "Fig8_pareto.png", "Fig. @F:pareto@. (a) Searched designs (points) and non-dominated sets (lines) in the plane of safe-stroke probability against over-torque probability, for the eight families; "
+# confidence limits of the chosen designs
+CI_ = R["ci"]
+fam_order = ["allowable|0", "median|0", "allowable|0.75", "median|0.75", "allowable|0|creep", "median|0|creep", "allowable|0.75|creep", "median|0.75|creep"]
+rows = []
+for k in fam_order:
+    d1 = CI_["designs"]["optimized %s" % k]; st = CI_["strict"][k]
+    rows.append([fnames[k], "%s%% (%s to %s)" % (n(100 * d1["p"], 2), n(100 * d1["lo"], 2), n(100 * d1["hi"], 2)), pc(oos["optimized %s" % k]["out_of_sample"]["safe"], 1),
+                 ("%s%% (%s to %s)" % (n(100 * st["overtorque"], 2), n(100 * st["lo"], 2), n(100 * st["hi"], 2))) if st else "none", pc(st["safe"], 1) if st else "none", n(st["n_feasible"]) if st else "0"])
+add(("table", "Table @T:ci@. Over-torque probability with Wilson 95%% limits on %s independent draws, for the best design of each family chosen at an estimated probability of at most 1%% and for the best design chosen so that the upper limit of "
+              "the in-sample estimate (%s draws) is at most 1%%; probability of a safe stroke; number of designs that qualify under the strict rule." % (n(M["n"]), n(M["n_opt"])),
+     ["Family", "Chosen at estimate <= 1%", "Safe", "Strict rule", "Safe", "Qualifying"], rows, [2.5, 1.5, 0.7, 1.5, 0.7, 0.8], 14))
+n_above = sum(1 for k in fam_order if CI_["designs"]["optimized %s" % k]["hi"] > 0.01)
+strict_hi = max(CI_["strict"][k]["hi"] for k in fam_order if CI_["strict"][k])
+cost = np_cost = [oos["optimized %s" % k]["out_of_sample"]["safe"] - CI_["strict"][k]["safe"] for k in fam_order if CI_["strict"][k]]
+add(("p", "On %s independent draws the designs chosen at an estimated 1%% have over-torque probabilities of %s to %s, and the upper 95%% limit exceeds 1%% for %s of the eight (Table @T:ci@): a point estimate near 1%% does not establish compliance with a strict "
+          "limit. Under the strict rule every design has an upper limit of at most %s, and the price is %s to %s percentage points of the probability of a safe stroke. A statement of compliance should be made with the strict rule, and with a number of draws chosen for the "
+          "margin that is wanted; the limits are Monte Carlo limits for the assumed priors and say nothing about the error of the priors."
+          % (n(M["n"]), pc(min(CI_["designs"]["optimized %s" % k]["p"] for k in fam_order), 2), pc(max(CI_["designs"]["optimized %s" % k]["p"] for k in fam_order), 2), n(n_above), pc(strict_hi, 2), n(100 * min(cost), 1), n(100 * max(cost), 1))))
+add(("fig", "@FILE:pareto@", "Fig. @F:pareto@. (a) Searched designs (points) and non-dominated sets (lines) in the plane of safe-stroke probability against over-torque probability, for the eight families; "
             "dashed lines are the families with creep, the star is the baseline tool and the dotted line the 1% constraint. (b) Median water per stroke of the designs of the family with the accumulator and the allowable-torque chart.", 6.8))
 # class-specific
 CS = R["class_specific"]
 wts = {"gate_12in": .30, "gate_24in": .25, "butterfly_36in": .15, "plug_16in": .10, "legacy_seized": .20}
 kit_mix = sum(w * CS[c]["safe"] for c, w in wts.items() if CS[c])
-add(("p", "A single configuration is almost as good as valve-class-specific ones. If the displacement, ratio, relief setting and flow limit are chosen separately for each class under the same 1%% constraint, "
-          "the weighted safe-stroke probability of the kit is %s, against %s for the best single design with the accumulator; the gain is %s percentage points, a modest one, "
-          "and part of it is the optimism of choosing the best of %s designs for each class. What cannot be shared is the relief setting, which has to be read from the chart of each class, as it is already in the single design. The interchangeable "
-          "gearing that the concept-stage study proposed for butterfly valves buys little once the over-torque constraint is in force (Supplementary Fig. S2)."
-          % (pc(kit_mix, 1), pc(o75["safe"], 1), n(100 * (kit_mix - o75["safe"]), 1), "500")))
+add(("p", "A single configuration is almost as good as valve-class-specific ones: choosing the displacement, ratio, relief setting and flow limit separately for each class under the same constraint gives a weighted safe-stroke probability of %s against %s for the best single design with the "
+          "accumulator (a gain of %s points, part of it the optimism of choosing the best of 500 designs per class). What cannot be shared is the relief setting, which is read from the chart of each class (Supplementary Fig. S2)."
+          % (pc(kit_mix, 1), pc(o75["safe"], 1), n(100 * (kit_mix - o75["safe"]), 1))))
 
 # ---------------------------------------------------------------------------------------------- 6.6
 add(("h2", "@S:robust@ Robustness to wrong input distributions"))
@@ -260,19 +267,37 @@ add(("p", "The optimum is not robust to every wrong prior (Table @T:robust@, Fig
              pc(oos["baseline (chart 2x median, no accumulator)"]["scenarios"]["surge x2"]["overtorque"], 0), n(R["robust_select"]["allowable|0.75"]["n_candidates"]),
              *[(pc(R["robust_select"]["allowable|0.75"]["picks"][l]["wc_safe"], 0) if R["robust_select"]["allowable|0.75"]["picks"][l] else "n/a") for l in ("0.03", "0.05", "0.1")],
              *[(pc(R["robust_select"]["allowable|0"]["picks"][l]["wc_safe"], 0) if R["robust_select"]["allowable|0"]["picks"][l] else "n/a") for l in ("0.03", "0.05", "0.1")])))
-add(("fig", "Fig9_robustness.png", "Fig. @F:robust@. Probability of a safe stroke (top) and of over-torque (bottom) under the assumption shifts for the baseline tool, the baseline with an accumulator, and the best "
+add(("fig", "@FILE:robust@", "Fig. @F:robust@. Probability of a safe stroke (top) and of over-torque (bottom) under the assumption shifts for the baseline tool, the baseline with an accumulator, and the best "
             "designs found with and without an accumulator. The dotted line marks 1%.", 6.8))
+STM = R["stem"]; SC_ = STM["curves"]
+cv = SC_["optimized allowable|0.75|creep"]; cv0 = SC_["optimized allowable|0.75"]; cb = SC_["baseline"]
+fpick = lambda rows, f: [r for r in rows if abs(r["f"] - f) < 1e-9][0]
+DER = STM["derating"]
+add(("p", "The strongest limitation of the nominal 1%% constraint is the stem strength, and it deserves a direct statement: the optimized configuration cannot be considered operationally safe without verified stem-strength information. "
+          "The over-torque probability of the optimized design with an accumulator and creep is %s when the stems are as strong as the data sheet says, %s when they are 10%% weaker, %s when they are 20%% weaker and %s when they are 30%% weaker (Fig. @F:stem@a); the baseline tool is at %s, %s, %s and %s. "
+          "The chart is computed from the nominal strength, so an error in the nominal strength passes straight to the stem. Holding 1%% over-torque when the stems may be weaker than the data sheet by a given factor requires a lower chart "
+          "(Table @T:derate@): %s of the allowable stem torque instead of %s when 10%% weaker stems must be tolerated, %s at 20%% and %s at 30%%, and the probability of a safe stroke that remains falls to %s, %s and %s (Fig. @F:stem@b). "
+          "Each 10%% of stem strength that is not known therefore costs about %s to %s percentage points of safe strokes. The operating rule that follows is that a relief chart is issued for a valve only with a verified stem strength for that valve, "
+          "and that a valve of unknown stem strength is operated with a derated chart, or by another means."
+          % (pc(fpick(cv, 1.0)["overtorque"], 1), pc(fpick(cv, 0.9)["overtorque"], 1), pc(fpick(cv, 0.8)["overtorque"], 1), pc(fpick(cv, 0.7)["overtorque"], 0),
+             pc(fpick(cb, 1.0)["overtorque"], 0), pc(fpick(cb, 0.9)["overtorque"], 0), pc(fpick(cb, 0.8)["overtorque"], 0), pc(fpick(cb, 0.7)["overtorque"], 0),
+             n(DER[1]["mult"], 2), n(DER[0]["mult"], 2), n(DER[2]["mult"], 2), n(DER[3]["mult"], 2), pc(DER[1]["safe"], 0), pc(DER[2]["safe"], 0), pc(DER[3]["safe"], 0),
+             n(100 * min(DER[i]["safe"] - DER[i + 1]["safe"] for i in range(3)), 0), n(100 * max(DER[i]["safe"] - DER[i + 1]["safe"] for i in range(3)), 0))))
+rows = [[n(r["f"], 1), n(r["mult"], 2), n(r["scale"], 2), pc(r["safe"], 1), pc(r["overtorque"], 2)] for r in DER]
+add(("table", "Table @T:derate@. Relief chart (multiple of the nominal allowable stem torque) that keeps the over-torque probability at 1%% when the true stem strength is a factor f of the data-sheet value, for the optimized design with an accumulator and creep "
+              "(D = %s cc, R = %s, flow limit %s gpm; nominal chart %s), with the factor by which the nominal chart is lowered and the probability of a safe stroke that remains." % (n(STM["tool"]["D"]), n(STM["tool"]["R"]), n(STM["tool"]["q"]), n(STM["tool"]["mult"], 2)),
+     ["Stem strength f", "Chart", "Factor", "Safe stroke", "Over-torque"], rows, [1.4, 1.0, 1.0, 1.2, 1.2], 16))
+add(("fig", "@FILE:stem@", "Fig. @F:stem@. (a) Over-torque probability against the true stem strength relative to the data-sheet value (the chart is computed from the data-sheet value), for the baseline tool, the baseline with an accumulator, and the "
+            "optimized designs with an accumulator without and with creep; the dotted line is 1%. (b) Probability of a safe stroke and relief chart that keep the over-torque probability at 1% when the stem may be weaker than the data sheet by the factor shown.", 6.8))
 H_ = R["hetero"]
 h_all, h_med = H_["allowable|0.75"], H_["median|0.75"]
-add(("p", "The choice of chart basis matters only when the stems are not all equally strong relative to the operating torque. With a stem strength proportional to the median breakaway torque, as in the "
-          "prior of Table @T:inputs@, a chart expressed as a fraction of the allowable stem torque is algebraically the same as a chart expressed as a multiple of the median breakaway torque, and the two families "
-          "of Table @T:designs@ differ only by search noise. In practice a stem is sized by its structural limit, and a butterfly valve or a corroded legacy valve can have a stem that is weak for its operating torque. "
-          "Repeating the optimization with allowable torques of 4.0, 3.0, 2.2, 3.5 and 2.0 times the median breakaway torque for the five classes, the best design with a chart "
-          "from the median breakaway torque has a safe-stroke probability of %s, but its over-torque probability for the worst class (%s) is %s, while the chart from the allowable torque "
-          "reaches %s with a worst class at %s (Fig. @F:surgehet@b). The data sheet of the stem, not only the operating torque of the valve, is therefore part of the information that the torque chart needs."
-          % (pc(h_med["best"]["safe"], 1) if h_med["best"] else "n/a", NICE[max(h_med["per_class"], key=lambda c: h_med["per_class"][c]["overtorque"])].lower(), pc(max(v["overtorque"] for v in h_med["per_class"].values()), 1) if h_med["per_class"] else "n/a",
-             pc(h_all["best"]["safe"], 1) if h_all["best"] else "n/a", pc(max(v["overtorque"] for v in h_all["per_class"].values()), 1) if h_all["per_class"] else "n/a")))
-add(("fig", "Fig10_surge_hetero.png", "Fig. @F:surgehet@. (a) Over-torque probability against a multiplier of the assumed surge, for the baseline tool, the baseline with an accumulator, and the best design "
+add(("p", "The chart basis matters only when stems are not equally strong relative to the operating torque. With the stem strength proportional to the median breakaway torque (Table @T:inputs@) the two bases are algebraically the same. With allowable torques of 4.0, 3.0, 2.2, 3.5 and 2.0 times "
+          "the median breakaway torque for the five classes, the best design with a chart from the median breakaway torque has a safe-stroke probability of %s but an over-torque probability of %s for the worst class (%s), while the chart from the allowable torque reaches %s with a worst class at %s "
+          "(Fig. @F:surgehet@b): the data sheet of the stem is part of the information that the chart needs."
+          % (pc(h_med["best"]["safe"], 1) if h_med["best"] else "n/a", pc(max(v["overtorque"] for v in h_med["per_class"].values()), 1) if h_med["per_class"] else "n/a",
+             NICE[max(h_med["per_class"], key=lambda c: h_med["per_class"][c]["overtorque"])].lower(), pc(h_all["best"]["safe"], 1) if h_all["best"] else "n/a",
+             pc(max(v["overtorque"] for v in h_all["per_class"].values()), 1) if h_all["per_class"] else "n/a")))
+add(("fig", "@FILE:surgehet@", "Fig. @F:surgehet@. (a) Over-torque probability against a multiplier of the assumed surge, for the baseline tool, the baseline with an accumulator, and the best design "
             "with an accumulator. (b) Over-torque probability of each valve class for the best designs of the two chart bases when the stem strength differs between classes.", 6.8))
 
 # ---------------------------------------------------------------------------------------------- 6.7
@@ -290,8 +315,8 @@ add(("p", "The torque margin of the tool (the logarithm of its stall capability 
           "real valves, and with an instrumented stall test."
           % (nm_[top_m[0]], n(SE["prcc_margin"][top_m[0]], 2), nm_[top_m[1]], n(SE["prcc_margin"][top_m[1]], 2), nm_[top_m[2]], n(SE["prcc_margin"][top_m[2]], 2),
              nm_[top_p[0]], n(SE["prcc_peak_ratio"][top_p[0]], 2), nm_[top_p[1]], n(SE["prcc_peak_ratio"][top_p[1]], 2), nm_[top_p[2]], n(SE["prcc_peak_ratio"][top_p[2]], 2), n(SE["prcc_peak_ratio"]["hose_C"], 2))))
-add(("fig", "Fig11_sensitivity.png", "Fig. @F:sens@. Partial rank correlation of the inputs with (a) the torque margin ln(T_cap/T_break) and (b) the peak ratio ln(T_peak/T_allow), baseline tool, valve-class mix.", 6.6))
-add(("fig", "Fig12_time_water.png", "Fig. @F:time@. (a) Distribution of the stroking time of successful strokes by valve class, baseline tool; the dotted line is the 15-minute limit. "
+add(("fig", "@FILE:sens@", "Fig. @F:sens@. Partial rank correlation of the inputs with (a) the torque margin ln(T_cap/T_break) and (b) the peak ratio ln(T_peak/T_allow), baseline tool, valve-class mix.", 6.6))
+add(("fig", "@FILE:time@", "Fig. @F:time@. (a) Distribution of the stroking time of successful strokes by valve class, baseline tool; the dotted line is the 15-minute limit. "
             "(b) Water used in one successful stroke.", 6.6))
 
 # ---------------------------------------------------------------------------------------------- 6.8
@@ -300,19 +325,13 @@ BM = R["benchmarks"]
 bn = [k for k in BM if k not in ("ideal_waterhydraulic", "hydratorque")]
 add(("p", "Two benchmarks put the tool in context under the same valve draws. A lossless water-hydraulic tool with the same displacement and ratio, no hose or coupling loss, no leakage and no start-up "
           "loss reaches a success probability of %s, against %s for the baseline: the circuit and efficiency losses cost about %s percentage points of success, and the shortfall of the baseline from "
-          "an ideal tool is therefore not in the hydraulics. Three conventional portable operators, represented only by a rated torque, a power, an availability of the energy source and a rated speed, "
-          "are evaluated on the same draws: %s. The engine-driven pack reaches a higher success probability than the water tool because its rating is higher, not because of any advantage in safety. The conventional operators are capability-limited, with a rated torque that is either too low for the stiff valves or, for the engine-driven pack, "
+          "an ideal tool is therefore not in the hydraulics. Three conventional portable operators (assumed rated torque, power, availability and speed) give: %s. The engine-driven pack reaches a higher success probability than the water tool because its rating is higher, not because of any advantage in safety. The conventional operators are capability-limited, with a rated torque that is either too low for the stiff valves or, for the engine-driven pack, "
           "without a torque limiter, so that the rated torque would exceed the allowable stem torque in %s of the draws. These figures rest on assumed ratings and availabilities, not on measured "
           "performance; they show where the torque ceiling of each approach lies and do not support a claim of superiority."
           % (pc(BM["ideal_waterhydraulic"]["success"], 1), pc(BM["hydratorque"]["success"], 1), n(100 * (BM["ideal_waterhydraulic"]["success"] - BM["hydratorque"]["success"]), 1),
              "; ".join("%s: success %s, safe %s" % (k, pc(BM[k]["success"], 0), pc(BM[k]["safe"], 0)) for k in bn), pc(BM[bn[2]]["overtorque"], 0))))
-add(("fig", "Fig13_benchmarks.png", "Fig. @F:bench@. Success and success without over-torque of the baseline tool, a lossless water-hydraulic tool (no surge model) and three conventional portable "
+add(("fig", "@FILE:bench@", "Fig. @F:bench@. Success and success without over-torque of the baseline tool, a lossless water-hydraulic tool (no surge model) and three conventional portable "
             "operators described by rated torque, power and availability, on the same valve draws.", 6.6))
-add(("h2", "@S:ypf@ The 1,500 N.m valve of the industrial challenge"))
+
 Y = R["ypf"]
-add(("p", "For a valve class with the 1,500 N.m breakaway torque quoted in the industrial challenge [@YPF2026] (lognormal, sigma 0.35, 10%% seizure), the baseline tool completes the stroke in %s of the draws, "
-          "with a safe stroke in %s and an over-torque probability of %s; the best design of the family with the accumulator and the allowable-torque chart gives a safe stroke in %s with %s over-torque. The "
-          "challenge asks for a multiplication of the operator's torque of four to six times; the median stall capability of the baseline tool is %s N.m, about %s times an operator effort of 300 N.m, but the "
-          "value of the limit is set by the stem, not by the tool."
-          % (pc(Y["baseline (chart 2x median, no accumulator)"]["success"]["p"], 0), pc(Y["baseline (chart 2x median, no accumulator)"]["success_safe"]["p"], 0),
-             pc(Y["baseline (chart 2x median, no accumulator)"]["overtorque"]["p"], 1), pc(Y["optimized allowable|0.75"]["success_safe"]["p"], 0), pc(Y["optimized allowable|0.75"]["overtorque"]["p"], 1), n(Y["baseline (chart 2x median, no accumulator)"]["T_cap_median_Nm"]), n(Y["baseline (chart 2x median, no accumulator)"]["T_cap_median_Nm"] / 300.0))))
+

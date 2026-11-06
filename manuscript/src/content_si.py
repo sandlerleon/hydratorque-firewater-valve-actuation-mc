@@ -84,4 +84,23 @@ for dn, v in R["robust"].items():
     rows.append([dn, pc(v["out_of_sample"]["safe"], 1), pc(v["out_of_sample"]["overtorque"], 2), pc(min(v["scenarios"][s]["safe"] for s in SC), 0), pc(max(v["scenarios"][s]["overtorque"] for s in SC), 1)])
 adds(("table", "Table S11. All designs: out-of-sample safe stroke and over-torque, and the worst case over the assumption shifts.",
       ["Design", "Safe (out of sample)", "Over-torque (o.o.s.)", "Worst-case safe", "Worst-case over-torque"], rows, [3.1, 1.0, 1.0, 1.0, 1.1], 15))
+adds(("h1", "S8. Transient check, stem strength and confidence limits"))
+rows = [[c["kind"], n(c["a"]), n(c["tc"], 3), n(c["classical"], 2), n(c["moc"], 2)] for c in R["moc"]["classical"]]
+adds(("table", "Table S12. The transient simulation against the classical surge relations (2.5-inch hose, 60 gpm, 60 m, reservoir upstream, no relief valve): wave speed (m/s), stopping time (s), classical surge (psi) and simulated surge (psi).",
+      ["Case", "Wave speed", "Stopping time", "Classical", "Simulation"], rows, [2.0, 1.0, 1.1, 1.0, 1.0], 16))
+rows = [[n(r["t_r"], 2), n(r["median"], 2), n(r["p95"], 2), pc(r["share_above_prior"], 0)] for r in R["moc"]["relief_response"]]
+adds(("table", "Table S13. Unrelieved fraction of the surge implied by the transient simulation against the response time of the relief valve (120 random cases each): median, 95th percentile and share above the prior bound of 0.3.",
+      ["Response time (s)", "Median", "95th percentile", "Above 0.3"], rows, [1.4, 1.0, 1.3, 1.0], 16))
+rows = []
+for nm, rr in R["stem"]["curves"].items():
+    for r in rr:
+        rows.append([nm, n(r["f"], 1), pc(r["overtorque"], 2), pc(r["safe"], 1)])
+adds(("table", "Table S14. Over-torque and safe-stroke probability against the true stem strength relative to the data-sheet value (60,000 draws).", ["Tool", "Stem strength", "Over-torque", "Safe stroke"], rows, [2.8, 1.1, 1.1, 1.1], 15))
+rows = [[k, pc(v["p"], 3), pc(v["lo"], 3), pc(v["hi"], 3)] for k, v in R["ci"]["designs"].items()]
+adds(("table", "Table S15. Over-torque probability of every evaluated design on the independent draws with Wilson 95% limits.", ["Design", "Over-torque", "Lower", "Upper"], rows, [3.4, 0.9, 0.9, 0.9], 14))
+rows = []
+for k, v in R["ci"]["strict"].items():
+    rows.append([k, n(v["n_feasible"]), pc(v["in_sample_ot"], 2), pc(v["in_sample_safe"], 1), pc(v["overtorque"], 2), "%s to %s" % (pc(v["lo"], 2), pc(v["hi"], 2)), pc(v["safe"], 1)] if v else [k, "0", "", "", "", "", ""])
+adds(("table", "Table S16. Strict compliance rule: the best design whose in-sample over-torque estimate has an upper Wilson limit of at most 1%, with its in-sample and independent estimates.",
+      ["Family", "Qualifying", "In-sample over-torque", "In-sample safe", "Independent over-torque", "95% limits", "Independent safe"], rows, [1.3, 0.8, 1.0, 0.9, 1.0, 1.2, 0.9], 14))
 adds(("refs",))

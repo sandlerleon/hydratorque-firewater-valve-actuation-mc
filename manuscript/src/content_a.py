@@ -6,54 +6,38 @@ M = R["meta"]
 
 # ============================================================================================ 1 Introduction
 add(("h1", "1. Introduction"))
-add(("p", "Large industrial valves must sometimes be operated when the plant has lost the services that normally move them. In an emergency, refineries, tank farms, terminals, "
-          "pipeline stations and offshore platforms may need to close or open a gate, plug or butterfly valve whose handwheel is stiff or seized, while electrical power, instrument air "
-          "and hydraulic supply are unavailable. Manual effort is limited, and the operator is exposed to injury when improvised extensions or cheater bars are used [@Olsen2024]. The reliability of emergency valves is usually assessed by partial-stroke testing of the installed actuator [@Ahmad2016], which does not cover the case in which the actuator itself has no power. Portable "
-          "operators powered by batteries, compressed air, gasoline or an oil-hydraulic power pack exist, but each has a weakness at the moment it is needed: a battery tool depends on a charged "
-          "pack and is an ignition-source concern in classified areas, a pneumatic tool depends on plant air, and a hydraulic power pack is heavy and needs oil. The need is recognised by industry: "
-          "an energy company has recently sought a portable, preferably non-electric device that multiplies an operator's torque four- to six-fold for valves of 2 to 16 inches, ready for deployment "
-          "in remote, cold regions [@YPF2026]."))
-add(("p", "Almost every hazardous facility already owns a pressurized, distributed and regularly inspected source of hydraulic power: the firewater system. A hose at 100 psi and 150 gpm carries about "
-          "6.5 kW of hydraulic power, far more than a portable valve tool needs. Water-hydraulic motors are an established technology [@Seabrook1994;@Yang2015;@Majdic2019], pressure "
-          "relief of water circuits has been studied [@Majdic2021], and the hydraulics of fire hoses [@Benfer2016] and of hydrant supplies [@NFPA291;@Nolan2017] are well characterised. Patents describe "
-          "hydrant-mounted operating apparatus with hose couplers and drive sockets [@Jackman1985], hydrant-attached remote-controlled valves [@Kolacz2014] and oscillatory actuators for fire-truck "
-          "valves [@Leete1992]. To the author's knowledge, based on a search that was not exhaustive, none of these treats the question that a designer of a firewater-powered "
-          "portable valve operator has to answer: with uncertain supply, uncertain valve demand and a torque limiter whose setting protects the valve but can also prevent the stroke, "
-          "how often does the tool complete the stroke without exceeding the allowable stem torque and without taking water that firefighting needs, and which design and operating rules make that "
-          "probability high?"))
-add(("p", "The question matters because the three requirements conflict. Raising the relief setting lets the tool break stiff valves free but raises the probability that the stem is overloaded. "
-          "Raising the flow limit shortens the stroke but draws water that a fire may need. Lowering the gear ratio speeds the stroke and lowers the torque. A first-order calculation shows that "
-          "pressurized firewater can drive a valve operator, which follows from established hydraulic principles; the contribution that can be defended is a reproducible design and operating envelope "
-          "that treats valve actuation success, stem overload, stroke time, water consumption and preservation of firefighting capacity together, and says how far it can be trusted."))
-add(("p", "This paper provides that envelope for a concept-stage tool, in four steps. First, it formulates a probabilistic model of the tool with an explicit hydraulic circuit (source characteristic, hose, "
-          "motor leakage and efficiency, relief override, and the pressure surge on stall), in which each added mechanism can be switched off so that the earlier first-order model is recovered exactly. "
-          "Second, it defines the safety criteria separately: success of the stroke, exceedance of the allowable stem torque, damage to the stem, and violation of the firefighting reserve. Third, it "
-          "formulates a multi-objective design problem, in which the motor, the ratio, the relief chart, the flow limit and a slow creep flow at the start and the end of travel are chosen to maximize the probability of a safe stroke subject to a limit on the over-torque probability and on water use, and tests the optimum out of "
-          "sample and under deliberately wrong input distributions. Fourth, it compares the tool with an idealised water-hydraulic benchmark and with capability-limited conventional operators. All "
-          "input distributions are assumed priors for a concept-stage study, and the paper states which of its conclusions depend on them."))
-add(("p", "Section 2 describes the architecture and the operating rule, Section 3 the model, Section 4 the probabilistic methodology and its verification, Section 5 the optimization problem, "
-          "Section 6 the results, Section 7 their interpretation and Section 8 the limitations and the validation that is needed. Section 9 concludes."))
+add(("p", "Large valves must sometimes be operated when plant power, instrument air and hydraulic supply are lost. Manual effort is limited, and improvised extensions expose the operator to injury [@Olsen2024]. "
+          "The reliability of emergency valves is usually assessed by partial-stroke testing of the installed actuator [@Ahmad2016], which does not cover an actuator that has no power. Portable operators powered by batteries, compressed air, "
+          "gasoline or an oil-hydraulic pack exist, but a battery tool depends on a charged pack and is an ignition-source concern in classified areas, a pneumatic tool depends on plant air, and a hydraulic pack is heavy and needs oil. "
+          "An energy company has recently sought a portable, preferably non-electric device that multiplies an operator's torque four- to six-fold for valves of 2 to 16 inches, deployable in remote, cold regions [@YPF2026]."))
+add(("p", "Almost every hazardous facility already owns a pressurized, regularly inspected source of hydraulic power: the firewater system. A hose at 100 psi and 150 gpm carries about 6.5 kW, far more than a portable valve tool needs. "
+          "Water-hydraulic motors are an established technology [@Seabrook1994;@Yang2015;@Majdic2019], the pressure relief of water circuits has been studied [@Majdic2021], and the hydraulics of fire hoses [@Benfer2016] and hydrant supplies [@NFPA291;@Nolan2017] are well characterised. Patents describe "
+          "hydrant-mounted operating apparatus [@Jackman1985], hydrant-attached remote-controlled valves [@Kolacz2014] and oscillatory actuators for fire-truck valves [@Leete1992]. To the author's knowledge, in a search that was not exhaustive, none treats the question "
+          "that a designer of a firewater-powered valve operator has to answer: with uncertain supply, valve demand and torque-limiter setting, how often does the tool complete the stroke without exceeding the allowable stem torque and without taking water "
+          "that firefighting needs, and which design and operating rules make that likely?"))
+
+add(("p", "The three requirements conflict: a higher relief setting breaks stiff valves free but overloads stems, a higher flow limit shortens the stroke but draws water that a fire may need, and a lower gear ratio speeds the stroke and lowers the torque. "
+          "That pressurized firewater can drive a valve operator follows from established hydraulic principles; the contribution that can be defended is a reproducible design and operating envelope that treats these requirements together and says how far it can be trusted. "
+          "The paper formulates a probabilistic model with an explicit hydraulic circuit and the pressure surge on stall, in which each added mechanism can be switched off so that the earlier first-order model is recovered exactly; defines the safety criteria separately "
+          "(success of the stroke, exceedance of the allowable stem torque, damage to the stem, violation of the firefighting reserve); poses a multi-objective design problem (motor, ratio, relief chart, flow limit and slow creep flows at the start and end of travel) under a limit on the "
+          "over-torque probability; and tests the optimum out of sample, under deliberately wrong input distributions, and against a transient simulation. All input distributions are assumed priors for a concept-stage study."))
+
 
 # ============================================================================================ 2 System architecture
 add(("h1", "2. System architecture and operating rule"))
-add(("p", "The tool (Fig. @F:arch@) is a portable water-hydraulic torque operator. A hose connects a hydrant, a firewater tap, a fire truck or a portable pump to a Smart Power Coupling "
-          "that carries a cleanable strainer, a flow limiter, a slow-opening shut-off valve and a mechanical pressure gauge. Water drives a gerotor, piston or vane motor of 150 to 400 cc per revolution "
-          "[@Yang2015;@Majdic2019]. A multi-stage planetary reducer of 100:1 to 500:1 multiplies the torque, and a universal interface with a reaction arm engages handwheels, operating nuts and part-turn "
-          "valves in the manner of the standard actuator attachments [@ISO5210]. An adjustable inlet relief valve limits the pressure drop across the motor, and therefore the torque, because motor "
-          "torque is proportional to that pressure drop; a stall shows as a pressure rise, which tells the operator that the end of travel has been reached. A hose-side accumulator is an option "
-          "to absorb the pressure surge on stall, and the flow limiter can be made adjustable so that the tool runs at a slow creep flow for the first turns of the stroke, to build torque gradually against a stuck valve, and for the last turns before the end of travel, to approach the stop slowly. The motor passes water continuously while it turns, so a discharge hose routes the exhaust to a drain. Everything in the baseline is mechanical, "
-          "which keeps it clear of the electrical ignition concerns of classified areas and places it under the assessment of non-electrical equipment [@ISO80079]."))
-add(("fig", "Fig1_architecture.png", "Fig. @F:arch@. Architecture of the firewater-powered valve operator. Water from a shared or dedicated source reaches the Smart Power Coupling "
+add(("p", "The tool (Fig. @F:arch@) is a portable water-hydraulic torque operator. A hose connects a hydrant, tap, fire truck or portable pump to a Smart Power Coupling with a cleanable strainer, a flow limiter, a slow-opening shut-off valve and a pressure gauge. "
+          "Water drives a gerotor, piston or vane motor of 150 to 400 cc per revolution [@Yang2015;@Majdic2019]; a planetary reducer of 100:1 to 500:1 multiplies the torque; a universal interface with a reaction arm engages handwheels, operating nuts and part-turn valves in the manner of the "
+          "standard actuator attachments [@ISO5210]. An adjustable inlet relief valve limits the pressure drop across the motor, and therefore the torque; a stall shows as a pressure rise. Options are a hose-side accumulator to absorb the surge on stall and an adjustable flow limiter that runs "
+          "at a slow creep flow for the first turns of the stroke, to build torque gradually against a stuck valve, and for the last turns, to approach the stop slowly. A discharge hose routes the exhaust water to a drain. The baseline is purely mechanical, which keeps it clear of the electrical "
+          "ignition concerns of classified areas, under the assessment of non-electrical equipment [@ISO80079]."))
+add(("fig", "@FILE:arch@", "Fig. @F:arch@. Architecture of the firewater-powered valve operator. Water from a shared or dedicated source reaches the Smart Power Coupling "
             "(strainer and flow limiter, slow-opening shut-off, inlet relief valve that limits the torque, optional accumulator), drives the motor and gearbox, and is discharged "
             "through a hose. The torque is delivered to the valve stem through the interface and a reaction arm.", 6.6))
-add(("p", "Two design variables are discrete in practice and are treated as such: the motor displacement $D$ and the gear ratio $R$ are chosen from a kit. Four are operating variables: the relief setting, "
-          "which is read from a torque chart, the flow limit, and the creep flows at the start and at the end of travel, each held for a few turns (one at the start and two at the end in the study). The chart is the safety-critical document of the tool. Two bases are compared: a chart expressed as a multiple of the median "
-          "breakaway torque of the valve class, which is what a designer who knows only the operating torque of the valve would use, and a chart expressed as a fraction of the nominal "
-          "allowable stem torque, which requires the valve data sheet."))
-add(("p", "The tool is subject to one operating rule that the model enforces: it must not draw water from a fire-protection system when doing so could compromise the performance that system must "
-          "deliver. A shared source (a firewater ring or a municipal hydrant) may therefore be used only up to the flow that it can spare without cutting its firefighting reserve; a dedicated source "
-          "(a fire truck or a portable pump) carries no such limit. The model evaluates the rule in two forms: the event that the tool draws more than the spare flow of a shared source "
-          "(a reserve violation), and an adaptive rule in which the flow limit is lowered to the spare flow of the source in use."))
+add(("p", "The displacement $D$ and the gear ratio $R$ are chosen from a kit; the relief setting, the flow limit and the creep flows are operating variables. The relief setting is read from a torque chart, the safety-critical document of the tool, on one of two bases: "
+          "a multiple of the median breakaway torque of the valve class, which is what a designer who knows only the operating torque would use, or a fraction of the nominal allowable stem torque, which requires the valve data sheet. The tool is subject to one operating rule "
+          "that the model enforces: it must not draw water from a fire-protection system when doing so could compromise the performance that system must deliver. A shared source (a firewater ring or hydrant) may be used only up to the flow that it can spare without cutting its "
+          "firefighting reserve; a dedicated source (a fire truck or portable pump) carries no such limit. The model evaluates the rule as an event (a reserve violation) and as an adaptive flow limit."))
+
 
 # ============================================================================================ 3 Mathematical formulation
 add(("h1", "3. Mathematical formulation"))
@@ -91,7 +75,7 @@ add(("p", "where $a$ is the wave speed in the compliant hose, $v=Q_{\\rm stall}/
           "accumulator. The flow before the stall is the end creep flow $Q_{\\rm e}$ when the stroke proceeds to its end, the start creep flow $Q_{\\rm s}$ when the valve does not break free (the tool then stalls at the start), and the running flow when there is no creep. The peak pressure at the motor is the smaller of the unrelieved surge and the relief override,"))
 add(("eq", r"p_{\rm peak}=\min\left\{p_{\rm s}+\Delta p_{\rm J},\ \ p_{\rm set}\left(1+\varepsilon_{\rm r}\right)+\kappa\,\Delta p_{\rm J}\right\}", 7))
 add(("p", "where $\\kappa$ is the fraction of the surge that the relief valve does not relieve in time. The peak torque is $T_{\\rm peak}=k_{\\rm T}^{\\rm st}\\,p_{\\rm peak}$, with the stall "
-          "constant $k_{\\rm T}^{\\rm st}$ of Eq. (2) and the reduced efficiency. Without a relief valve $p_{\\rm peak}=p_{\\rm s}+\\Delta p_{\\rm J}$."))
+          "constant $k_{\\rm T}^{\\rm st}$ of Eq. (2) and the reduced efficiency. Without a relief valve $p_{\\rm peak}=p_{\\rm s}+\\Delta p_{\\rm J}$. The surge model is a screening approximation: Section @S:moc@ checks its relations against a transient simulation, and an instrumented stall test is the validation that it still needs."))
 add(("h2", "3.5 Events and the metrics reported"))
 add(("p", "Five events are defined for every draw. A stroke succeeds if the tool delivers the breakaway torque ($T_{\\rm cap}=k_{\\rm T}^{\\rm st}\\min\\{\\Delta p_{\\rm s},p_{\\rm set}\\}\\ge T_{\\rm break}$), sustains the running "
           "torque, and completes the stroke within the time limit. An exceedance occurs when the peak stall torque $T_{\\rm peak}$ is greater than the allowable stem torque $T_{\\rm allow}$, which "

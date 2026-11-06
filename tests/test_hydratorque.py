@@ -177,3 +177,34 @@ def test_zero_creep_turns_is_no_creep():
     b = H.evaluate(replace(H.Tool2(), creep_start_gpm=10.0, creep_end_gpm=10.0, creep_turns_start=0.0, creep_turns_end=0.0), S)
     ok = np.isfinite(a["t_min"])
     assert np.allclose(a["t_min"][ok], b["t_min"][ok], rtol=1e-9) and np.array_equal(a["success"], b["success"])
+
+
+# ---------------------------------------------------------------------------- transient check (method of characteristics) and confidence limits
+def test_moc_reproduces_the_joukowsky_surge():
+    for a in (150.0, 250.0, 400.0):
+        rise = H.moc_peak(60.0, a, 2.5, 60.0, 50.0, 50.0, 1e-4) - 50.0
+        assert abs(rise - H.joukowsky_rise_psi(60.0, a, 2.5, 60.0, 1e-4)) / rise < 0.01
+
+
+def test_moc_reproduces_the_michaud_surge_for_a_slow_stop():
+    v = 60.0 * H.GPM_M3S / (math.pi / 4 * (2.5 * H.INCH) ** 2)
+    for tc in (0.8, 2.0, 4.0):
+        rise = H.moc_peak(60.0, 300.0, 2.5, 60.0, 50.0, 50.0, tc) - 50.0
+        assert abs(rise - 2 * H.RHO * 60.0 * v / tc / H.PSI) / rise < 0.02
+
+
+def test_moc_short_stop_matches_the_reduction_factor_of_the_model():
+    for tc in (0.05, 0.2, 0.4):
+        rise = H.moc_peak(60.0, 300.0, 2.5, 60.0, 50.0, 50.0, tc) - 50.0
+        assert abs(rise - H.joukowsky_rise_psi(60.0, 300.0, 2.5, 60.0, tc)) / rise < 0.02
+
+
+def test_moc_relief_valve_lowers_the_peak():
+    no = H.moc_peak(60.0, 300.0, 2.5, 60.0, 30.0, 120.0, 0.1)
+    yes = H.moc_peak(60.0, 300.0, 2.5, 60.0, 30.0, 120.0, 0.1, p_set_psi=60.0, eps=0.15, t_r=0.03)
+    assert yes < no and yes >= 30.0
+
+
+def test_wilson_interval_contains_the_estimate_and_narrows_with_n():
+    lo1, hi1 = H.wilson(10, 1000); lo2, hi2 = H.wilson(100, 10000)
+    assert lo1 < 0.01 < hi1 and lo2 < 0.01 < hi2 and (hi2 - lo2) < (hi1 - lo1)

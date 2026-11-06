@@ -19,11 +19,12 @@ add(("h1", "Abstract"))
 add(("p0", "Almost every hazardous facility owns a pressurized, regularly inspected source of hydraulic power: its firewater system. This study asks whether a portable water-hydraulic operator driven through a fire hose can stroke "
            "seized or stiff valves without overloading the stem or taking the water that firefighting needs, and which design and operating rules make that likely. A Monte Carlo model with an explicit hydraulic circuit, motor leakage, "
            "a relief valve and the surge on stall is evaluated on %s draws; every added mechanism can be switched off, recovering the earlier first-order model exactly. Under assumed input distributions a baseline tool "
-           "(200 cc, 250:1, 60 gpm) completes the stroke in %s of the draws but without exceeding the allowable stem torque in only %s, because a median surge of %s psi accompanies the stall; a stroke needs about %s L of water, "
-           "not the 50 to 100 L/min first assumed. A hose-side accumulator and a relief chart set from the stem strength reduce the over-torque probability to 1%% at a cost of %s to %s percentage points of safe strokes, and a slow creep "
-           "flow at the start and end of travel recovers %s to %s percentage points of that cost. The optimum holds out of sample but not under a weaker stem or a larger surge, and the firefighting reserve is protected only if the spare flow of the source is known. "
-           "The results are simulation outputs under assumed priors, not measurements."
+           "(200 cc, 250:1, 60 gpm) completes the stroke in %s of the draws but without exceeding the allowable stem torque in only %s, because a median surge of %s psi accompanies the stall; a stroke needs about %s L of water. "
+           "A hose-side accumulator and a relief chart set from the stem strength reduce the over-torque probability to 1%% at a cost of %s to %s percentage points of safe strokes, of which a slow creep flow at the start and end of travel recovers %s to %s. "
+           "The surge model reproduces classical water-hammer results and is conservative against a transient simulation. The optimum holds out of sample but not under a stem 30%% weaker than its data sheet (%s over-torque), "
+           "and the firefighting reserve is protected only if the spare flow of the source is known. The results are simulation outputs under assumed priors, not measurements."
            % (n(M["n"]), pc(b0["success"]["p"], 0), pc(b0["success_safe"]["p"], 0), n(R["surge"]["median_psi"]), n(round(b0["volume_median_L"], -2)),
-              n(100 * (b0["success_safe"]["p"] - o75["safe"]), 0), n(100 * (b0["success_safe"]["p"] - o0["safe"]), 0), n(100 * (oc75["safe"] - o75["safe"]), 0), n(100 * (oc0["safe"] - o0["safe"]), 0))))
+              n(100 * (b0["success_safe"]["p"] - o75["safe"]), 0), n(100 * (b0["success_safe"]["p"] - o0["safe"]), 0), n(100 * (oc75["safe"] - o75["safe"]), 0), n(100 * (oc0["safe"] - o0["safe"]), 0),
+              pc([r for r in R["stem"]["curves"]["optimized allowable|0.75|creep"] if r["f"] == 0.7][0]["overtorque"], 0))))
 add(("h1", "Keywords"))
 add(("p0", "Water hydraulics; Valve actuation; Firewater; Monte Carlo simulation; Multi-objective optimization; Emergency response"))
