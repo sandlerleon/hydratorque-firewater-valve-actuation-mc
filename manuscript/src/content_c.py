@@ -12,6 +12,11 @@ OPTK = {k: v for k, v in OPT.items()}
 BEST = {k: v["best_feasible"] for k, v in OPT.items()}
 
 
+def rng_(lo, hi, d):
+    """a range 'lo to hi', or a single value when the two agree at the printed precision"""
+    return n(lo, d) if n(lo, d) == n(hi, d) else "%s to %s" % (n(lo, d), n(hi, d))
+
+
 def p(d, dd=1):
     return pc(d["p"], dd)
 
@@ -182,14 +187,14 @@ add(("p", "A design that satisfies the 1%% constraint exists in every family (%s
           "design completes a safe stroke in %s of the draws, against %s for the baseline tool, which exceeds the allowable stem torque in %s; with an accumulator that absorbs three quarters of "
           "the surge the best design reaches %s. The baseline tool with the accumulator and the original chart gives %s with %s over-torque, so at the 1%% constraint the safer configuration gives "
           "up %s to %s percentage points of the safe-stroke probability of the baseline against a reduction of the over-torque probability by a factor of about %s. The chosen designs "
-          "have a relief setting at about half of the nominal allowable stem torque (%s to %s of it, which is %s to %s times the median breakaway torque), flow limits of %s to %s gpm and a product $D\\,R$ of %s to %s: "
+          "have a relief setting at about half of the nominal allowable stem torque (%s of it, which is %s times the median breakaway torque), flow limits of %s to %s gpm and a product $D\\,R$ of %s to %s: "
           "lower than the baseline's 50,000. The probability of a safe stroke at this constraint is not sensitive to the exact displacement and ratio along the ridge (Fig. @F:pareto@a)."
           % (n(min(v["n_feasible"] for v in fam.values())), n(max(v["n_feasible"] for v in fam.values())), n(M["designs"]), pc(min(o["overtorque"] for o in [oos["optimized %s" % k]["out_of_sample"] for k in fam]), 1),
              pc(max(o["overtorque"] for o in [oos["optimized %s" % k]["out_of_sample"] for k in fam]), 1), pc(o0["safe"], 1), pc(B0["success_safe"]["p"], 1), pc(B0["overtorque"]["p"], 0),
              pc(o75["safe"], 1), pc(oos["baseline + accumulator 0.75"]["out_of_sample"]["safe"], 1), pc(oos["baseline + accumulator 0.75"]["out_of_sample"]["overtorque"], 1),
              n(100 * (B0["success_safe"]["p"] - o75["safe"]), 1), n(100 * (B0["success_safe"]["p"] - o0["safe"]), 1), n(B0["overtorque"]["p"] / max(o75["overtorque"], 1e-4)),
-             n(min(BEST[k]["mult"] for k in fam if k.startswith("allowable")), 2), n(max(BEST[k]["mult"] for k in fam if k.startswith("allowable")), 2),
-             n(min(BEST[k]["mult"] for k in fam if k.startswith("allowable")) * 3, 1), n(max(BEST[k]["mult"] for k in fam if k.startswith("allowable")) * 3, 1),
+             rng_(min(BEST[k]["mult"] for k in fam if k.startswith("allowable")), max(BEST[k]["mult"] for k in fam if k.startswith("allowable")), 2),
+             rng_(min(BEST[k]["mult"] for k in fam if k.startswith("allowable")) * 3, max(BEST[k]["mult"] for k in fam if k.startswith("allowable")) * 3, 1),
              n(min(BEST[k]["q"] for k in fam)), n(max(BEST[k]["q"] for k in fam)), n(min(BEST[k]["D"] * BEST[k]["R"] for k in fam)), n(max(BEST[k]["D"] * BEST[k]["R"] for k in fam)))))
 # creep families
 cr0, cr75 = BEST["allowable|0|creep"], BEST["allowable|0.75|creep"]

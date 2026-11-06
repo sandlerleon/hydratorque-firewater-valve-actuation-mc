@@ -1,0 +1,447 @@
+accepted 300 hunks in 76 paragraphs, rejected 48 hunks; 19 paragraphs kept as built
+
+REJECT paragraph #7 (abstract: 'does not exceed ... by only 63%' and 'rules are likely' change the meaning) | Almost every hazardous facility owns a pressurized, regularl
+  accept  [Multi-objective] -> [Multiobjective]
+PARAGRAPH #9 | Water hydraulics; Valve actuation; Firewater; Monte Carlo si
+  accept  [,] -> [;]
+  accept  [non-electric] -> [nonelectric]
+  accept  [six-fold] -> [sixfold]
+PARAGRAPH #11 | Large valves must sometimes be operated when plant power, in
+REJECT paragraph #12 ('best of the authors' knowledge' (sole author), 'no one has addressed' (wrong subject)) | Almost every hazardous facility already owns a pressurized, 
+  accept  [The] -> [This]
+  accept  [ the] -> []
+  accept  [multi-objective] -> [multiobjective]
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [the ]
+  accept  [] -> [ to be]
+PARAGRAPH #13 | The three requirements conflict: a higher relief setting bre
+REJECT paragraph #15 ('keeps it clear of' -> 'highlights' reverses the meaning) | The tool (Fig. 1) is a portable water-hydraulic torque opera
+REJECT paragraph #17 ('smart power coupling' (proper name)) | Fig. 1. Architecture of the firewater-powered valve operator
+  accept  [] -> [ the]
+  reject  [-] -> [ ]
+  accept  [] -> [ the]
+PARAGRAPH #18 | The displacement D and the gear ratio R are chosen from a ki
+  accept  [] -> [, respectively]
+  accept  [uses] -> [use]
+PARAGRAPH #25 | where ηm and ηg are the motor and gearbox efficiencies. The 
+  accept  [largest] -> [greatest]
+PARAGRAPH #29 | The hose loses pressure as C (Q/100)2 (L/100) psi for a hose
+  accept  [] -> [is ]
+  accept  [] -> [ is]
+  accept  [] -> [is ]
+  accept  [] -> [ is]
+PARAGRAPH #31 | holds, limited by the flow limiter Qlim, where Δpz is the el
+  reject  [-] -> [‒]
+PARAGRAPH #33 | A water-hydraulic motor leaks through its clearances, and th
+  accept  [] -> [ is]
+  accept  [,] -> [;]
+  accept  [] -> [ is]
+  accept  [] -> [the ]
+  accept  [] -> [ the]
+  accept  [] -> [,]
+  accept  [operating time] -> [operation]
+  accept  [set-up] -> [the setup]
+PARAGRAPH #35 | where nm is the motor speed, ηv the volumetric efficiency at
+  accept  [the ] -> []
+PARAGRAPH #36 | 3.4 Relief valve, stall and the pressure surge
+  accept  [the] -> [is]
+  accept  [chart derives] -> [derived]
+  accept  [] -> [which is ]
+  accept  [] -> [ is]
+PARAGRAPH #37 | The relief valve opens at the set pressure pset, which the c
+  accept  [] -> [ is]
+  accept  [] -> [is ]
+  accept  [] -> [ is]
+  accept  [smaller] -> [lower]
+PARAGRAPH #39 | where a is the wave speed in the compliant hose, v=Qstall/Ah
+  accept  [] -> [,]
+PARAGRAPH #41 | where κ is the fraction of the surge that the relief valve d
+  accept  [] -> [ ]
+  accept  [] -> [,]
+  accept  [a] -> [which is the]
+  accept  [] -> [ the]
+  accept  [about] -> [approximately]
+  accept  [about] -> [approximately]
+  accept  [as] -> [success]
+  accept  [success] -> [rate]
+PARAGRAPH #43 | Five events are defined for every draw. A stroke succeeds if
+  accept  [The valve] -> [Valve]
+  accept  [, the] -> [;]
+  accept  [, the] -> [;]
+  accept  [,] -> [;]
+  accept  [ the] -> []
+PARAGRAPH #46 | Every input of the model is a random variable with an assume
+  accept  [] -> [is used ]
+  accept  [] -> [ the]
+  accept  [] -> [the ]
+  accept  [] -> [ the]
+  accept  [,] -> []
+PARAGRAPH #47 | Latin-hypercube sampling is used for the design search [18,1
+REJECT paragraph #50 (restructures the verification sentence ( 'the concept-stage model draw for draw is reproduced')) | The model is verified in five ways, none of which validates 
+  accept  [only ] -> []
+  accept  [decided] -> [determined only]
+  accept  [] -> [,]
+PARAGRAPH #51 | Numerical verification is distinguished from physical valida
+  accept  [Check of] -> [Checking]
+PARAGRAPH #52 | 4.3 Check of the surge model against a transient simulation
+  reject  [-] -> [–]
+  accept  [characteristic] -> [characteristics]
+PARAGRAPH #53 | The surge relations of Eqs. (6) and (7) are classical, but t
+  accept  [] -> [,]
+  reject  [in] -> [respectively, at]
+  accept  [,] -> []
+  accept  [] -> [,]
+  accept  [] -> [,]
+  accept  [about] -> [approximately]
+PARAGRAPH #54 | Three comparisons are made (Fig. 3). First, the solver repro
+  accept  [] -> [; thus]
+  accept  [ so] -> []
+  accept  [,] -> [ and]
+  accept  [it] -> [is]
+  accept  [needs] -> [needed]
+PARAGRAPH #55 | The check compares the model's relations with a more detaile
+REJECT paragraph #57 (caption: 'Check the surge model', 'equal') | Fig. 3. Check of the surge model. (a) Surge at the motor end
+  accept  [see] -> [determine]
+  accept  [lowered] -> [decreased]
+  accept  [lowered] -> [decreased]
+  accept  [] -> [and ]
+  accept  [at] -> [decreased]
+  accept  [a reduced] -> [in]
+PARAGRAPH #59 | Eight shifts are applied to the draws, one at a time, and th
+  accept  [Multi-objective] -> [Multiobjective]
+PARAGRAPH #60 | 5. Multi-objective optimization
+  accept  [, plus,] -> [;]
+  reject  [-] -> [‒]
+  accept  [each] -> [one]
+  accept  [] -> [ one]
+  accept  [,] -> []
+PARAGRAPH #61 | The design problem has four variables: the displacement D (6
+  accept  [non-dominated] -> [nondominated]
+  accept  [] -> [,]
+PARAGRAPH #63 | The limit of 1% is an illustrative research constraint, not 
+  accept  [happened to fall] -> [fell]
+PARAGRAPH #64 | A design chosen because its estimated over-torque probabilit
+  accept  [,] -> []
+  accept  [] -> [,]
+  accept  [] -> [,]
+  reject  [in] -> [is]
+  reject  [over-torque] -> [overtorque]
+  accept  [about] -> [approximately]
+  reject  [] -> [for ]
+PARAGRAPH #67 | The baseline tool has a 200 cc motor, a 250:1 gearbox, a 60 
+  accept  [result] -> [results]
+  accept  [characteristic] -> [characteristics]
+  accept  [ the] -> []
+  accept  [the ] -> []
+  reject  [-] -> [ ]
+  accept  [,] -> []
+  accept  [] -> [and ]
+  accept  [lowers] -> [decreases]
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [assumed value of the ]
+  accept  [ assumed] -> []
+  accept  [raises] -> [increases]
+  accept  [the ] -> []
+  accept  [implied] -> [implies]
+  reject  [on] -> [in]
+  accept  [raises] -> [increases]
+  reject  [over-torque] -> [overtorque]
+PARAGRAPH #69 | The six added mechanisms do not change the result equally (T
+  accept  [Switching the] -> [The]
+  accept  [] -> [ are switched]
+PARAGRAPH #70 | Table 3. Switching the model-2 mechanisms on one at a time, 
+REJECT paragraph #72 (caption typo 'Breakway') | Fig. 2. Verification and mechanism ladder. (a) Breakaway pro
+  reject  [stated] -> [revealed]
+  accept  [13 to 26 gpm is the ] -> []
+  accept  [] -> [ is 13 to 26 gpm]
+  accept  [,] -> []
+PARAGRAPH #73 | The concept-stage study stated that the tool draws 50 to 100
+REJECT paragraph #74 (heading 'surge in stall' and 'limiter and') | 6.2 The torque limiter, the surge on stall and stem damage
+REJECT paragraph #75 ('regardless of safety, the chart is paid for' is garbled) | The relief valve is essential. Without it the success probab
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [,]
+  accept  [set-point] -> [setpoint]
+  accept  [about] -> [approximately]
+  accept  [] -> [which is ]
+  accept  [] -> [; thus]
+  accept  [ so] -> []
+  reject  [over-torque] -> [overtorque]
+  accept  [lowers] -> [decreases]
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [, respectively]
+  accept  [,] -> []
+  accept  [] -> [,]
+PARAGRAPH #76 | The surge on stall is the largest single source of over-torq
+  accept  [marks] -> [indicates]
+PARAGRAPH #78 | Fig. 4. (a) Distributions of the valve breakaway demand, the
+  accept  [,] -> []
+  accept  [the ] -> []
+  accept  [the over-torque] -> [overtorque]
+  accept  [ the] -> []
+PARAGRAPH #80 | Fig. 5. (a) Probability of a safe stroke against the probabi
+  accept  [at the ] -> []
+PARAGRAPH #81 | 6.3 Creep at the start and at the end of travel
+  accept  [brings] -> [causes]
+  accept  [ the] -> []
+  accept  [] -> [,]
+  accept  [lowers] -> [decreases]
+  accept  [lowers] -> [decreases]
+PARAGRAPH #82 | A tool whose flow can be turned down is a natural remedy for
+  accept  [accumulator] -> [Accumulator]
+PARAGRAPH #83 | Table 4. Creep at the start and at the end of travel, baseli
+  reject  [over-torque] -> [overtorque]
+  accept  [,] -> []
+  accept  [raise] -> [increase]
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [,]
+  accept  [] -> [ decreases]
+  reject  [over-torque] -> [overtorque]
+  accept  [against] -> [compared with]
+  accept  [] -> [,]
+  accept  [raise] -> [increase]
+  accept  [cut] -> [decrease]
+  accept  [] -> [,]
+PARAGRAPH #84 | Creep at the end of travel works. Two turns at 20 gpm lower 
+REJECT paragraph #86 ('strokes ending in 15 minutes' changes the meaning) | Fig. 6. Creep at the start and at the end of travel, baselin
+  accept  [The design] -> [Design]
+PARAGRAPH #87 | 6.4 The design space
+  accept  [] -> [,]
+  accept  [] -> [; thus]
+  accept  [ so] -> []
+  accept  [,] -> []
+  accept  [rises] -> [increases]
+PARAGRAPH #88 | With the flow limited, the torque scales with D R and the sp
+  reject  [over-torque] -> [overtorque]
+  accept  [,] -> []
+PARAGRAPH #90 | Fig. 7. (a) Probability of a safe stroke and (b) probability
+REJECT paragraph #91 (heading 'reserves ... limits' (plural)) | 6.5 Firewater reserve and the flow limit
+  reject  [found] -> [revealed]
+  accept  [That] -> [This]
+  accept  [] -> [,]
+  accept  [] -> [flow, ]
+  accept  [] -> [, it occurs]
+  accept  [falls] -> [decreases]
+  accept  [,] -> []
+  accept  [that has not measured its] -> [whose]
+  accept  [] -> [ has not been measured]
+PARAGRAPH #92 | The concept-stage study found that the tool draws more than 
+  accept  [,] -> []
+  accept  [,] -> []
+PARAGRAPH #94 | Fig. 8. (a) Probability of a safe stroke and of finishing wi
+  accept  [multiple] -> [Multiple]
+  accept  [ ] -> []
+  accept  [ ] -> []
+PARAGRAPH #96 | Table 5. Best design of each family under P(over-torque) <= 
+  accept  [] -> [,]
+  accept  [against] -> [in contrast to]
+  accept  [in] -> [by]
+  accept  [] -> [,]
+  accept  [gives] -> [is]
+  accept  [] -> [a ]
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [,]
+  accept  [of] -> [in]
+  reject  [over-torque] -> [overtorque]
+  accept  [about] -> [approximately]
+  accept  [at] -> [of]
+  accept  [about] -> [approximately]
+  accept  [ of it] -> []
+  accept  [:] -> [, which is]
+  accept  [and] -> [or]
+PARAGRAPH #97 | A design that satisfies the 1% constraint exists in every fa
+  accept  [at the ] -> []
+  accept  [raises] -> [increases]
+  accept  [] -> [,]
+  accept  [,] -> []
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [, respectively]
+  accept  [] -> [,]
+  accept  [] -> [,]
+  accept  [start] -> [starting]
+  accept  [] -> [,]
+  accept  [ in it] -> []
+PARAGRAPH #98 | Allowing the creep flows at the start and at the end of trav
+  accept  [] -> [,]
+PARAGRAPH #99 | The 1% limit is illustrative, and Table 6 shows how the best
+  reject  [over-torque] -> [overtorque]
+PARAGRAPH #100 | Table 6. Best probability of a safe stroke among the searche
+  accept  [,] -> []
+PARAGRAPH #101 | Table 7. Over-torque probability with Wilson 95% limits on 2
+  accept  [] -> [,]
+  accept  [] -> [,]
+  accept  [,] -> []
+PARAGRAPH #102 | On 200,000 independent draws the designs chosen at an estima
+  accept  [non-dominated] -> [nondominated]
+  reject  [over-torque] -> [overtorque]
+  accept  [,] -> []
+  accept  [] -> [,]
+  accept  [] -> [ is]
+  reject  [-] -> [ ]
+PARAGRAPH #104 | Fig. 9. (a) Searched designs (points) and non-dominated sets
+  accept  [] -> [a ]
+  accept  [ones] -> [configuration]
+  accept  [gives] -> [yields]
+  accept  [it] -> [which is]
+PARAGRAPH #105 | A single configuration is almost as good as valve-class-spec
+  accept  [wrong] -> [incorrect]
+PARAGRAPH #106 | 6.7 Robustness to wrong input distributions
+  accept  [Probability] -> [The probability]
+  accept  [ ] -> []
+  accept  [ ] -> []
+  accept  [shift,] -> [shifts]
+PARAGRAPH #107 | Table 8. Probability of a safe stroke / probability of over-
+  accept  [] -> [,]
+  accept  [the] -> [a]
+  accept  [larger] -> [greater]
+  reject  [over-torque] -> [overtorque]
+  reject  [over-torque] -> [overtorque]
+  accept  [of] -> [in]
+  accept  [the ] -> []
+  accept  [ the] -> []
+  accept  [the efficiencies] -> [efficiency]
+  accept  [the ] -> []
+  accept  [,] -> []
+  accept  [whatever] -> [regardless of]
+  accept  [] -> [,]
+  accept  [torques] -> [torque]
+  accept  [are] -> [is]
+  accept  [rises] -> [increases]
+  accept  [,] -> []
+  accept  [] -> [,]
+  accept  [] -> [the ]
+  accept  [in] -> [of]
+  accept  [] -> [, respectively]
+PARAGRAPH #108 | The optimum is not robust to every wrong prior (Table 8, Fig
+  accept  [marks] -> [represents]
+PARAGRAPH #110 | Fig. 10. Probability of a safe stroke (top) and of over-torq
+  accept  [it deserves a direct statement: ] -> []
+  reject  [-] -> [ ]
+  accept  [about] -> [approximately]
+  accept  [,] -> []
+PARAGRAPH #111 | The strongest limitation of the nominal 1% constraint is the
+REJECT paragraph #112 ('data sheet value' and garbled punctuation in the caption) | Table 9. Relief chart (multiple of the nominal allowable ste
+REJECT paragraph #114 ('data sheet value' and garbled punctuation in the caption) | Fig. 11. (a) Over-torque probability against the true stem s
+  accept  [] -> [,]
+  accept  [:] -> [;]
+PARAGRAPH #115 | The chart basis matters only when stems are not equally stro
+  accept  [,] -> []
+PARAGRAPH #117 | Fig. 12. (a) Over-torque probability against a multiplier of
+  accept  [] -> [the ]
+  reject  [have] -> [are]
+  reject  [correlations] -> [correlated]
+  accept  [,] -> []
+  accept  [] -> [of ]
+  accept  [programme] -> [program]
+  accept  [,] -> []
+PARAGRAPH #119 | The torque margin of the tool (the logarithm of its stall ca
+  accept  [] -> [and ]
+PARAGRAPH #121 | Fig. 13. Partial rank correlation of the inputs with (a) the
+REJECT paragraph #123 (caption: 'by valve class and baseline tool' changes the meaning) | Fig. 14. (a) Distribution of the stroking time of successful
+  reject  [-] -> [‒]
+  accept  [about] -> [approximately]
+  accept  [give] -> [are as follows]
+  accept  [] -> [and ]
+  accept  [The] -> [Compared with the water tool, the]
+  accept  [ than the water tool] -> []
+  reject  [-] -> [ ]
+PARAGRAPH #125 | Two benchmarks put the tool in context under the same valve 
+  reject  [over-torque] -> [overtorque]
+  reject  [-] -> [‒]
+  accept  [,] -> []
+PARAGRAPH #127 | Fig. 15. Success and success without over-torque of the base
+  accept  [programme] -> [program]
+  accept  [about] -> [approximately]
+  accept  [are] -> [constitute]
+  reject  [brings] -> [increases]
+  reject  [over-torque] -> [overtorque]
+  accept  [ of it] -> []
+  reject  [of the] -> [an]
+  accept  [litres] -> [liters]
+PARAGRAPH #130 | Three results are specific enough to guide a bench programme
+  accept  [programme] -> [program]
+  accept  [the] -> [a]
+  accept  [] -> [ of]
+  accept  [ it gives] -> [,]
+  accept  [] -> [ is given]
+  accept  [] -> [,]
+  accept  [] -> [,]
+  accept  [gives] -> [is]
+  accept  [] -> [,]
+  accept  [strengths] -> [strength]
+  accept  [about] -> [approximately]
+PARAGRAPH #131 | The recommended starting configuration for the bench program
+  accept  [,] -> []
+  accept  [about] -> [approximately]
+  accept  [about] -> [approximately]
+  accept  [that has not measured its] -> [whose]
+  accept  [] -> [ has not been measured]
+  accept  [ will] -> []
+  accept  [shows] -> [reveals the direction]
+  accept  [ direction:] -> []
+PARAGRAPH #132 | The results suggest the following design hypotheses, to be t
+REJECT paragraph #134 (drops the 'neither ... nor' limitation of the novelty claim) | Existing portable valve operators run on electricity, batter
+  accept  [] -> [, which is]
+  accept  [non-electrical] -> [nonelectrical]
+  reject  [technology] -> [technological]
+  accept  [asks for] -> [requires]
+PARAGRAPH #136 | Four constraints follow from the setting and are not capture
+REJECT paragraph #138 (deletes 'yield', 'safety factor' and 'arm length' labels) | The operating envelope of Section 6.6 is only useful if the 
+  accept  [of] -> [on]
+  accept  [] -> [,]
+  reject  [accumulator] -> [cumulative]
+  accept  [] -> [,]
+  accept  [the ] -> []
+PARAGRAPH #140 | Four observations follow. The stall torque is of the order o
+  accept  [] -> [,]
+  accept  [,] -> [ and is]
+  accept  [,] -> [ and]
+PARAGRAPH #142 | The principal limitation is that every input distribution is
+  accept  [programme] -> [program]
+  accept  [the ] -> []
+  accept  [measures] -> [is performed to measure]
+  accept  [the ] -> []
+  accept  [ the] -> []
+  accept  [give] -> [are used to determine]
+  accept  [tests] -> [test of]
+PARAGRAPH #143 | A validation programme that would replace the assumed priors
+  accept  [,] -> []
+  accept  [the] -> [a]
+  accept  [,] -> []
+  accept  [shows] -> [reveals]
+  accept  [without] -> [that]
+  accept  [exceeding] -> [does not exceed]
+  accept  [against] -> [in contrast to]
+  reject  [over-torque] -> [overtorque]
+  reject  [-] -> [ ]
+PARAGRAPH #145 | 1. A simulation of a firewater-powered portable valve operat
+  accept  [] -> [ the]
+  reject  [over-torque] -> [overtorque]
+  accept  [largest] -> [greatest]
+  accept  [about] -> [approximately]
+PARAGRAPH #146 | 2. The surge on stall is the main source of over-torque, and
+  accept  [about] -> [approximately]
+  accept  [] -> [ which is]
+PARAGRAPH #148 | 4. A stroke uses about 1,600 L of water at the 60 gpm limit;
+  accept  [about] -> [approximately]
+  accept  [the experiment that the model needs] -> [needed]
+PARAGRAPH #149 | 5. The surge relations of the model reproduce the classical 
+  reject  [-] -> [ ]
+  accept  [raises] -> [increases]
+  reject  [over-torque] -> [overtorque]
+  accept  [,] -> []
+  reject  [over-torque] -> [overtorque]
+  accept  [] -> [,]
+PARAGRAPH #150 | 6. The optimized configuration cannot be considered operatio
+  accept  [] -> [ the]
+  accept  [required] -> [needed]
+PARAGRAPH #151 | 7. The chart basis matters only if stem strength differs bet
+  accept  [non-financial] -> [nonfinancial]
+  accept  [] -> [,]
+PARAGRAPH #154 | Competing interests. The author has no financial or non-fina
+  accept  [] -> [ the]
+PARAGRAPH #155 | Availability of data and material. All results are generated
+  accept  [] -> [,]
+PARAGRAPH #158 | Use of generative AI. During the preparation of this work th
+REJECT paragraph #173 (reference title) | [14] ISO 5210:2017, Industrial valves — Multi-turn valve act
+REJECT paragraph #174 (reference title) | [15] ISO 80079-36:2016, Explosive atmospheres — Part 36: Non
+REJECT paragraph #183 (reference title) | [24] R. Marler, J. Arora, Survey of multi-objective optimiza
