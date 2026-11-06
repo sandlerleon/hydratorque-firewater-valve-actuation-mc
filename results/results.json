@@ -1,6 +1,6 @@
 {
  "meta": {
-  "version": "2.2.0",
+  "version": "2.3.0",
   "rpm_cap": 3000.0,
   "n": 200000,
   "n_sweep": 60000,
@@ -40,7 +40,7 @@
    "creep_turns_end": 2.0
   },
   "t_max_min": 15.0,
-  "runtime_s": 1093.5
+  "runtime_s": 1237.8
  },
  "selftest": {
   "closed_form_max_dev": 0.002375794910892126,

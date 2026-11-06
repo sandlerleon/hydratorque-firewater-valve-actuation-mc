@@ -40,6 +40,15 @@ Run them without repeating the main study: `python HydraTorque_MC.py --extras --
 
 Run them without repeating the main study: `python HydraTorque_MC.py --extras --outdir results`.
 
+## Surge model check, stem strength, confidence limits and mechanical loads (v2.2.0)
+
+* **Transient check** (`study_moc`): the surge relations of the model reproduce the classical Joukowsky and Michaud results exactly against a method-of-characteristics simulation of the hose, and the model's peak pressure is at or above the simulated peak in 97% of 300 random cases (median ratio 1.19); the prior of the unrelieved fraction holds only for relief valves that respond within about 0.1 s. This verifies the screening model against its own physics; it is **not** an experimental validation.
+* **Stem strength** (`study_stem`): the optimized design (accumulator and creep) has 0.98% over-torque at the data-sheet stem strength, 2.4% with stems 10% weaker and 14% with stems 30% weaker; holding 1% at a 30% uncertainty needs a relief chart lowered to 0.36 of the allowable stem torque and leaves 38% safe strokes. The design is not operationally safe without verified stem strengths.
+* **Confidence limits** (`study_ci`): Wilson 95% limits of the over-torque probability on 200,000 independent draws (upper limits up to 1.03% for designs chosen at an estimated 1%) and a strict rule that admits a design only if the upper limit of its in-sample estimate is at most 1%.
+* **Mechanical loads** (`study_mech`): peak stall torque up to 4,982 N.m (99th percentile, baseline), gearbox rating 5,717 to 8,543 N.m, reaction force 5.6 to 8.3 kN at a 0.6 m arm, accumulator gas volume of a few litres; screening estimates, not a design.
+
+Run them without repeating the main study: `python HydraTorque_MC.py --extras --outdir results`.
+
 ## Quick start
 
 ```
