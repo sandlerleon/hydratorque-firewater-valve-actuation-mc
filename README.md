@@ -51,7 +51,7 @@ Draw-for-draw equivalence with the concept-stage model when the six added mechan
 
 ## Versions
 
-* **v2.1.0** (2026-11-05) — creep at the start and at the end of travel (`Tool2.creep_*`, `study_creep`, six-variable design search, 5 new tests); eight design families; figures and tables of the manuscript numbered in order of citation; `HydraTorque_MC.py` version 2.1.0.
+* **v2.1.0** (2026-11-05; Zenodo paper v2 10.5281/zenodo.23992903, code 10.5281/zenodo.23992904) — creep at the start and at the end of travel (`Tool2.creep_*`, `study_creep`, six-variable design search, 5 new tests); eight design families; figures and tables of the manuscript numbered in order of citation; `HydraTorque_MC.py` version 2.1.0.
 * **v2.0.0** (2026-11-04) — model 2: surge on stall, motor leakage, start-up efficiency, source characteristic, exhaust back-pressure; safe-stroke criterion; firefighting-reserve model with adaptive rule; safety-constrained multi-objective optimization with out-of-sample, robustness and chart-basis studies; benchmarks; water-budget reconciliation. Corrects two statements of the concept-stage white paper (see above).
 
 ## Archive and citation
