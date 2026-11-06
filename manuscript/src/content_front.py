@@ -13,7 +13,7 @@ add(("title", TITLE))
 add(("author", "Leon Sandler"))
 add(("small", "Independent Researcher, Northbrook, Illinois, USA"))
 add(("small", "ORCID: https://orcid.org/0009-0007-4584-808X"))
-add(("small", "Corresponding author: leon.sandler@alumni.swinburne.edu"))
+add(("small", "Corresponding author: sandler.leon@gmail.com"))
 add(("blank",))
 add(("h1", "Abstract"))
 add(("p0", "Almost every hazardous facility owns a pressurized, regularly inspected source of hydraulic power: its firewater system. This study asks whether a portable water-hydraulic operator driven through a fire hose can stroke "

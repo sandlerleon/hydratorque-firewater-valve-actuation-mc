@@ -30,7 +30,7 @@ def para(t, bold=False, after=None):
 
 
 para("Leon Sandler", True, 0)
-for t in ("Independent Researcher", "Northbrook, Illinois, USA", "leon.sandler@alumni.swinburne.edu", "ORCID 0009-0007-4584-808X"):
+for t in ("Independent Researcher", "Northbrook, Illinois, USA", "sandler.leon@gmail.com", "ORCID 0009-0007-4584-808X"):
     para(t, after=0)
 para("")
 para(datetime.date.today().strftime("%d %B %Y").lstrip("0"))
@@ -56,9 +56,8 @@ para("The code and results are openly available at %s and archived at https://do
      "(all versions). One command regenerates every number and figure." % (GITHUB, DOIS["code_concept"], DOIS["paper_concept"]))
 para("Disclosure. The concept originated as a white paper that I prepared for an industrial scouting challenge; I have filed no patent, and no contract or payment has resulted. "
      "The work received no external funding.")
-para("Author affiliation and email address. I am an independent researcher with no current institutional affiliation, and I am the sole author. My contact and corresponding-author address is the alumni "
-     "email address provided by my former university (Swinburne University of Technology, leon.sandler@alumni.swinburne.edu); it identifies me as a graduate and does not indicate a current "
-     "affiliation or employer.")
+para("Author affiliation and email address. I am an independent researcher with no current institutional affiliation, and I am the sole author. The corresponding-author email address, "
+     "sandler.leon@gmail.com, is my personal address and is the one registered in the submission system.")
 para("A generative AI tool (Claude, Anthropic) assisted with code development, analysis, drafting and editing; I reviewed and checked all of it and take full responsibility for the content, as "
      "disclosed in the manuscript. The manuscript is original, has not been published elsewhere and is not under consideration at any other journal. I am the sole author and have no competing interests.")
 para("Thank you for considering this submission.")

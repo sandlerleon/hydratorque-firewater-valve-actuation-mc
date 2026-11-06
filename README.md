@@ -1,6 +1,6 @@
 # HydraTorque: probabilistic design and safety-constrained optimization of a firewater-powered portable valve operator
 
-Leon Sandler, Independent Researcher — leon.sandler@alumni.swinburne.edu — ORCID 0009-0007-4584-808X
+Leon Sandler, Independent Researcher — sandler.leon@gmail.com — ORCID 0009-0007-4584-808X
 
 Code, results and manuscript for *"Probabilistic Design and Safety-Constrained Optimization of a Firewater-Powered Portable Valve Actuation System,"* prepared for the **Journal of the Brazilian Society of Mechanical Sciences and Engineering** (Springer Nature).
 
@@ -78,6 +78,7 @@ Draw-for-draw equivalence with the concept-stage model when the six added mechan
 
 ## Versions
 
+* **v2.3.2** (2026-11-06; Zenodo paper v6 10.5281/zenodo.24020481, code 10.5281/zenodo.24020484) — corresponding-author email in the manuscript, supplement, cover letter and ChemRxiv copy changed to the address registered in the submission system (sandler.leon@gmail.com); no change to code or results.
 * **v2.3.1** (2026-11-05; Zenodo paper v5 10.5281/zenodo.23994379, code 10.5281/zenodo.23994380) — language edit of the manuscript merged hunk by hunk (American spelling, commas, articles and plain wording accepted; 18 paragraphs and about 50 hunks that changed meaning, broke a name or a term, or introduced a typo rejected; equations, figures, tables and references unchanged; `manuscript/src/merge_rubriq_ht.py`, `manuscript/src/rubriq_merge_report_v2.3.1.txt`). No change to code or results. The manuscript docx is the merged file; `build_manuscript.py` regenerates the text before the edit.
 * **v2.3.0** (2026-11-05; Zenodo paper v4 10.5281/zenodo.23994264, code 10.5281/zenodo.23994265) — the motor speed at the flow limit (3,000 rpm, an assumed requirement) is part of the design search (`RPM_CAP`, `motor_rpm`, `best_feasible` respects it, `best_any` does not); the recommended configuration is the speed-constrained design (D = 473 cc, R = 109, 534 rpm); accumulator volumes in the manuscript are labeled as required gas volumes (hypothetical for designs without an accumulator); a fresh clone reproduced all results; 31 tests.
 * **v2.2.0** (2026-11-05; Zenodo paper v3 10.5281/zenodo.23993401, code 10.5281/zenodo.23993408) — response to a submission-readiness review: method-of-characteristics check of the surge model (`moc_peak`, `study_moc`), stem-strength study with derating (`study_stem`), Wilson limits and strict compliance rule (`study_ci`), preliminary mechanical loads (`study_mech`), `--extras`; five new tests (30 in total); manuscript shortened and restructured (figures 1-15, tables 1-10).

@@ -5,7 +5,7 @@ M = R["meta"]
 
 adds(("title", "Supplementary Information for: " + TITLE))
 adds(("author", "Leon Sandler"))
-adds(("small", "Independent Researcher, Northbrook, Illinois, USA · leon.sandler@alumni.swinburne.edu"))
+adds(("small", "Independent Researcher, Northbrook, Illinois, USA · sandler.leon@gmail.com"))
 adds(("blank",))
 adds(("h1", "S1. Reproduction"))
 adds(("p0", "Software: HydraTorque_MC.py version %s (numpy and matplotlib only), archived at https://doi.org/%s. Commands: python HydraTorque_MC.py --demo (verification suite, about one minute); "
